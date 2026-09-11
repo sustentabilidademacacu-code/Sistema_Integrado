@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .models import Secretaria
+from .serializers import SecretariaSerializer
 
-# Create your views here.
+class SecretariaViewSet(viewsets.ModelViewSet):
+    queryset = Secretaria.objects.all()
+    serializer_class = SecretariaSerializer
