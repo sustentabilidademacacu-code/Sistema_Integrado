@@ -43,6 +43,11 @@ class Ocorrencia(models.Model):
     foto_storage_url = models.URLField(max_length=500, null=True, blank=True, help_text="Link da foto no R2")
     status_publico = models.CharField(max_length=50, choices=STATUS_PUBLICO_CHOICES, default='Recebido')
     status_interno = models.CharField(max_length=255, null=True, blank=True, help_text="Ex: Aguardando motosserra.")
+    localidade = models.CharField(max_length=100, null=True, blank=True)
+    bairro = models.CharField(max_length=100, null=True, blank=True)
+    logradouro = models.CharField(max_length=255, null=True, blank=True)
+    numero = models.CharField(max_length=50, null=True, blank=True)
+    descricao = models.TextField(null=True, blank=True)
     data_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:

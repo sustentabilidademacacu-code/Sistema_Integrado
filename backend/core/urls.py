@@ -1,13 +1,20 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from usuarios.views import SecretariaViewSet
 
-# Criamos as rotas (caminhos) da nossa API
+# Importando todas as portas que você criou!
+from usuarios.views import SecretariaViewSet
+from ocorrencias.views import InventarioVulnerabilidadeViewSet, OcorrenciaViewSet
+from clima.views import EstacaoMeteorologicaViewSet, SistemaEstadoViewSet
+
 router = DefaultRouter()
 router.register(r'secretarias', SecretariaViewSet)
+router.register(r'vulnerabilidades-mmvc', InventarioVulnerabilidadeViewSet)
+router.register(r'ocorrencias', OcorrenciaViewSet)
+router.register(r'estacoes-meteorologicas', EstacaoMeteorologicaViewSet)
+router.register(r'estado-sistema', SistemaEstadoViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls), # A porta dos fundos que você já usou
-    path('api/', include(router.urls)), # A porta do nosso Garçom (API)
+    path('admin/', admin.site.urls),
+    path('api/', include(router.urls)), 
 ]
