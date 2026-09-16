@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Secretaria
+from .models import Secretaria, PerfilUsuario, SolicitacaoAcesso
 
-# Isso diz ao Django para colocar a tabela no Painel Azul
 admin.site.register(Secretaria)
+admin.site.register(PerfilUsuario)
+admin.site.register(SolicitacaoAcesso)

@@ -16,6 +16,8 @@ export default function FormNovaOcorrencia() {
   const [listaRuas, setListaRuas] = useState([]);
   const [geojsons, setGeojsons] = useState({ logs: null });
 
+  const [listaVulnerabilidades, setListaVulnerabilidades] = useState([]);
+
   // Estado que controla o menu suspenso de categoria
   const [categoriaSelect, setCategoriaSelect] = useState('Deslizamento de Terra');
 
@@ -29,7 +31,8 @@ export default function FormNovaOcorrencia() {
     prioridade_acao: 'P2', 
     status_publico: 'Recebido',
     latitude: '',
-    longitude: ''
+    longitude: '',
+    vulnerabilidade: ''
   });
 
   // Função para limpar números do início (ex: "1º Distrito" -> "Distrito") para ordenar pelas letras
@@ -110,9 +113,20 @@ export default function FormNovaOcorrencia() {
       } catch (err) {
         console.error("Erro carregando arquivos geojson:", err);
       }
+    };
+
+    const fetchVulnerabilidades = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/vulnerabilidades-mmvc/');
+        if (res.ok) setListaVulnerabilidades(await res.json());
+      } catch (e) { console.error(e); }
+    };
+
+    if (isOpen) {
+      carregarDados();
+      fetchVulnerabilidades();
     }
-    carregarDados();
-  }, []);
+  }, [isOpen]);
 
   const handleChange = (e) => {
     const nomeCampo = e.target.name;
@@ -154,6 +168,9 @@ export default function FormNovaOcorrencia() {
     
     // Agora enviamos exatamente o que a pessoa digitou, sem coordenadas
     const payload = { ...formData };
+    if (!payload.vulnerabilidade) {
+      payload.vulnerabilidade = null;
+    }
 
     try {
       const res = await fetch('http://127.0.0.1:8000/api/ocorrencias/', {
@@ -190,15 +207,15 @@ export default function FormNovaOcorrencia() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl border border-slate-200 my-auto">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl border border-slate-200 my-auto max-h-[calc(100vh-1rem)] sm:max-h-[85vh]">
             
             <div className="bg-[#022888] p-3 flex justify-between items-center text-white rounded-t-xl">
               <h2 className="font-bold text-sm tracking-wide">Registrar Nova Ocorrência</h2>
-              <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white font-bold text-lg leading-none">&times;</button>
+              <button type="button" aria-label="Fechar formulário" onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white font-bold text-lg leading-none p-2 -mr-2">&times;</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 max-h-[calc(100vh-5rem)] sm:max-h-[calc(85vh-4rem)] overflow-y-auto">
               
               {/* === BLOCO 1: ENDEREÇO MANUAL === */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
@@ -206,7 +223,7 @@ export default function FormNovaOcorrencia() {
                   1. Endereço da Ocorrência
                 </label>
                 
-                <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Localidade *</label>
                     <select required name="localidade" value={formData.localidade} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888] bg-white">
@@ -235,7 +252,7 @@ export default function FormNovaOcorrencia() {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-[3]">
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Rua / Logradouro *</label>
                     <input list="lista-ruas" required type="text" name="logradouro" value={formData.logradouro} onChange={handleChange} placeholder="Ex: Rua das Flores" className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888] bg-white" />
@@ -254,7 +271,7 @@ export default function FormNovaOcorrencia() {
               {/* ======================= */}
 
               {/* === BLOCO 2: DADOS DA OCORRÊNCIA === */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Categoria</label>
                   <select value={categoriaSelect} onChange={handleChangeCategoriaSelect} className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888]">
@@ -282,7 +299,19 @@ export default function FormNovaOcorrencia() {
                   </select>
                 </div>
 
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Vulnerabilidade (MMVC) Associada</label>
+                  <select name="vulnerabilidade" value={formData.vulnerabilidade} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888]">
+                    <option value="">Nenhuma (Registro Avulso)</option>
+                    {listaVulnerabilidades.map(vuln => (
+                      <option key={vuln.id} value={vuln.id}>
+                        {vuln.categoria} ({vuln.prioridade_acao})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Descrição Detalhada</label>
                   <textarea required rows="3" name="descricao" value={formData.descricao} onChange={handleChange} placeholder="Descreva a situação..." className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888]"></textarea>
                 </div>

@@ -13,6 +13,21 @@ class EstacaoMeteorologica(models.Model):
     def __str__(self):
         return self.nome
 
+class LeituraEstacao(models.Model):
+    estacao = models.ForeignKey(EstacaoMeteorologica, on_delete=models.CASCADE, related_name='leituras')
+    data_hora = models.DateTimeField(auto_now_add=True, help_text="Momento exato em que a leitura chegou")
+    chuva_mm = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Volume de chuva em mm")
+    nivel_rio_metros = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Nível do rio em metros")
+    temperatura_c = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    
+    class Meta:
+        verbose_name = "Leitura da Estação"
+        verbose_name_plural = "Leituras das Estações"
+        ordering = ['-data_hora']
+
+    def __str__(self):
+        return f"{self.estacao.nome} - {self.data_hora.strftime('%d/%m/%Y %H:%M')}"
+
 class SistemaEstado(models.Model):
     # Aqueles níveis oficiais do seu protocolo!
     NIVEIS_CHOICES = [

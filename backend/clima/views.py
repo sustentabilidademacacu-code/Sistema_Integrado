@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import EstacaoMeteorologica, SistemaEstado
-from .serializers import EstacaoMeteorologicaSerializer, SistemaEstadoSerializer
+from .models import EstacaoMeteorologica, SistemaEstado, LeituraEstacao
+from .serializers import EstacaoMeteorologicaSerializer, SistemaEstadoSerializer, LeituraEstacaoSerializer
 
 class EstacaoMeteorologicaViewSet(viewsets.ModelViewSet):
     queryset = EstacaoMeteorologica.objects.all()
@@ -9,3 +9,7 @@ class EstacaoMeteorologicaViewSet(viewsets.ModelViewSet):
 class SistemaEstadoViewSet(viewsets.ModelViewSet):
     queryset = SistemaEstado.objects.all()
     serializer_class = SistemaEstadoSerializer
+
+class LeituraEstacaoViewSet(viewsets.ModelViewSet):
+    queryset = LeituraEstacao.objects.all()
+    serializer_class = LeituraEstacaoSerializer
