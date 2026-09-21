@@ -68,26 +68,34 @@ export default function LoginWrapper({ children }) {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Verifica se o perfil está liberado antes de considerar autenticado
-        const { data: perfilData } = await supabase
-          .from('solicitacao_acesso')
-          .select('status, perfil, secretaria_id')
-          .eq('email_institucional', session.user.email)
-          .single();
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
 
-        if (perfilData && perfilData.status === 'liberado') {
-          setIsAuthenticated(true);
+        if (session) {
+          // Verifica se o perfil está liberado antes de considerar autenticado
+          const { data: perfilData } = await supabase
+            .from('solicitacao_acesso')
+            .select('status, perfil, secretaria_id')
+            .eq('email_institucional', session.user.email)
+            .single();
+
+          if (perfilData && perfilData.status === 'liberado') {
+            setIsAuthenticated(true);
+          } else {
+            // Sessão existe mas usuário não está liberado — faz logout silencioso
+            await supabase.auth.signOut();
+            setIsAuthenticated(false);
+          }
         } else {
-          // Sessão existe mas usuário não está liberado — faz logout silencioso
-          await supabase.auth.signOut();
           setIsAuthenticated(false);
         }
-      } else {
+      } catch (err) {
+        console.error("Erro ao verificar sessão:", err);
         setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     checkSession();
 

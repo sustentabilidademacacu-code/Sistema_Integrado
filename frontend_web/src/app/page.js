@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import LoginWrapper from './LoginWrapper';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,7 +10,7 @@ export default function RootIndex() {
     const perfil = localStorage.getItem('smiic_perfil');
     if (perfil === 'gabinete') {
       router.push('/gabinete');
-    } else if (perfil === 'operacional') {
+    } else {
       router.push('/operacional');
     }
   }, [router]);
