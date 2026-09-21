@@ -417,7 +417,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
       {/* FONTE DE DADOS — canto inferior direito, acima do zoom */}
       <div className="absolute bottom-16 right-2 z-[1000] bg-[#0a192f]/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-lg shadow-lg">
         <p className="text-[9px] text-slate-400 leading-tight">
-          <strong className="text-slate-300">Fonte:</strong> CIGEO — Secretaria de Planejamento e Geoprocessamento
+          <strong className="text-slate-300">Fonte:</strong> CIGEO — Secretaria de Planejamento, Habitação e Geoprocessamento
         </p>
       </div>
     </div>
