@@ -55,9 +55,16 @@ const coresPaleta = [
 const getCorParaUC = (nome) => {
   if (!nome) return '#15803d';
   
+  const nomeLower = nome.toLowerCase();
+  
   // Parque dos Três Picos com cor fixada: verde musgo escuro e forte
-  if (nome.toLowerCase().includes('três picos') || nome.toLowerCase().includes('tres picos')) {
+  if (nomeLower.includes('três picos') || nomeLower.includes('tres picos')) {
     return '#2d4a22'; 
+  }
+  
+  // APA da Bacia do Rio Macacu com cor fixada: marrom
+  if (nomeLower.includes('rio macacu')) {
+    return '#8b4513';
   }
   
   let hash = 0;
