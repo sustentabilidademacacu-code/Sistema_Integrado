@@ -40,20 +40,16 @@ const getIconeEstacao = (color = 'bg-blue-500') => new L.DivIcon({
   popupAnchor: [0, -16],
 });
 
-// Paleta de cores sóbrias para UCs: tons naturais de azul, verde e ciano
+// Paleta de cores para UCs (azul, verde, amarelo, cinza, marrom, laranja, vermelho, roxo - sem rosa)
 const coresPaleta = [
-  '#0e7490', // ciano escuro
-  '#047857', // esmeralda escuro
-  '#166534', // verde escuro
-  '#0f766e', // teal
-  '#1d4ed8', // azul profundo
-  '#065f46', // esmeralda muito escuro
-  '#155e75', // ciano muito escuro
-  '#0369a1', // azul oceano
-  '#0c4a6e', // azul marinho
-  '#14532d', // verde floresta
-  '#134e4a', // teal escuro
-  '#1e3a5f', // azul noturno
+  '#3b82f6', // azul
+  '#22c55e', // verde
+  '#eab308', // amarelo
+  '#6b7280', // cinza
+  '#8b4513', // marrom
+  '#f97316', // laranja
+  '#ef4444', // vermelho
+  '#8b5cf6', // roxo
 ];
 
 const getCorParaUC = (nome) => {
@@ -166,7 +162,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           } else if (props.BAIRRO) {
             l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#047857' });
           } else if (props.nome_localidade) {
-            l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#1d4ed8' });
+            l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#000000' });
           } else {
             l.setStyle({ fillOpacity: 0.35, weight: 2.5, color: '#0e7490' }); // Rios
           }
@@ -364,7 +360,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           <FeatureGroup>
             <GeoJSON
               data={localidadesData}
-              style={{ color: '#1d4ed8', weight: 2.5, fillOpacity: 0 }}
+              style={{ color: '#000000', weight: 2.5, fillOpacity: 0 }}
               onEachFeature={mostrarNomeNoMouse}
             />
           </FeatureGroup>
