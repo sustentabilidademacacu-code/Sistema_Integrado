@@ -102,28 +102,32 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
   const posicaoEnquadrada = [-22.4647, -42.6533];
 
   const mostrarNomeNoMouse = (feature, layer) => {
-    const nome = feature.properties?.nome || feature.properties?.nome_uc;
+    const props = feature.properties || {};
+    // Lê o campo correto dependendo de qual GeoJSON é
+    const nome = props.BAIRRO || props.nome_localidade || props.nome_uc || props.nome || props.NOME || null;
+
     if (nome) {
       layer.bindTooltip(nome, {
         permanent: false,
-        direction: 'center',
-        className: 'bg-[#0a192f]/95 backdrop-blur-md border border-white/10 shadow-2xl text-white font-bold text-[10px] uppercase tracking-widest rounded-lg px-3 py-1.5'
+        sticky: true,     // segue o mouse dentro do polígono
+        direction: 'top',
+        className: 'mapa-tooltip'
       });
-      
+
       // Se for uma UC, também amarra um Popup detalhado
-      if (feature.properties?.nome_uc) {
-        const { cria_ano, cria_ato, ha_total, esfera, org_gestor, categoria } = feature.properties;
+      if (props.nome_uc) {
+        const { cria_ano, cria_ato, ha_total, esfera, org_gestor, categoria } = props;
         const area = ha_total ? parseFloat(ha_total).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' ha' : 'Não informada';
         const popupContent = `
-          <div class="flex flex-col gap-1 min-w-[220px] text-white">
-            <strong class="text-white text-[13px] leading-tight tracking-wide">${nome}</strong>
-            <span class="text-[9px] font-black text-emerald-400 uppercase tracking-widest">${categoria || 'Unidade de Conservação'}</span>
-            <div class="w-full h-px bg-white/20 my-1"></div>
-            <div class="text-[10px] text-slate-300 flex flex-col gap-1 mt-1">
-              <p><b class="text-slate-400 font-medium">Criação:</b> <span class="text-white">${cria_ano || '-'} ${cria_ato ? '(' + cria_ato + ')' : ''}</span></p>
-              <p><b class="text-slate-400 font-medium">Área:</b> <span class="text-white">${area}</span></p>
-              <p><b class="text-slate-400 font-medium">Esfera:</b> <span class="text-white">${esfera || '-'}</span></p>
-              <p><b class="text-slate-400 font-medium">Gestor:</b> <span class="text-white">${org_gestor || '-'}</span></p>
+          <div style="min-width:220px;color:#f8fafc;font-family:system-ui,sans-serif;">
+            <strong style="font-size:13px;display:block;margin-bottom:2px;">${nome}</strong>
+            <span style="font-size:9px;font-weight:900;color:#34d399;text-transform:uppercase;letter-spacing:0.1em;">${categoria || 'Unidade de Conservação'}</span>
+            <hr style="border-color:rgba(255,255,255,0.15);margin:6px 0;">
+            <div style="font-size:11px;color:#cbd5e1;display:flex;flex-direction:column;gap:4px;">
+              <p><b style="color:#94a3b8;">Criação:</b> <span style="color:#fff;">${cria_ano || '-'} ${cria_ato ? '(' + cria_ato + ')' : ''}</span></p>
+              <p><b style="color:#94a3b8;">Área:</b> <span style="color:#fff;">${area}</span></p>
+              <p><b style="color:#94a3b8;">Esfera:</b> <span style="color:#fff;">${esfera || '-'}</span></p>
+              <p><b style="color:#94a3b8;">Gestor:</b> <span style="color:#fff;">${org_gestor || '-'}</span></p>
             </div>
           </div>
         `;
@@ -137,7 +141,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         },
         mouseout: (e) => {
           const l = e.target;
-          if (feature.properties?.nome_uc) {
+          if (props.nome_uc) {
             l.setStyle({ fillOpacity: 0.15, weight: 1.5 });
           } else {
             l.setStyle({ fillOpacity: 0.08, weight: 1 });
@@ -146,6 +150,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
       });
     }
   };
+
 
   return (
     <div className={`relative w-full z-0 bg-[#0a234f] ${fullScreen ? 'h-screen' : 'h-[450px] xl:h-[600px] rounded-xl overflow-hidden shadow-inner'}`}>
@@ -241,6 +246,20 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
           .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+          .mapa-tooltip {
+            background: rgba(10, 25, 47, 0.95) !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            border-radius: 8px !important;
+            color: #f1f5f9 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.08em !important;
+            padding: 5px 10px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+            white-space: nowrap !important;
+          }
+          .mapa-tooltip::before { border-top-color: rgba(255,255,255,0.15) !important; }
         `}</style>
 
         <LayersControl position={fullScreen ? "bottomleft" : "topright"} collapsed={false}>
