@@ -176,7 +176,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           } else if (props.BAIRRO) {
             l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#047857' });
           } else if (props.nome_localidade) {
-            l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#000000' });
+            l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#1e3a8a' });
           } else {
             l.setStyle({ fillOpacity: 0.35, weight: 2.5, color: '#0e7490' }); // Rios
           }
@@ -374,7 +374,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           <FeatureGroup>
             <GeoJSON
               data={localidadesData}
-              style={{ color: '#000000', weight: 2.5, fillOpacity: 0 }}
+              style={{ color: '#1e3a8a', weight: 2.5, fillOpacity: 0 }}
               onEachFeature={mostrarNomeNoMouse}
             />
           </FeatureGroup>
