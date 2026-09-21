@@ -1,0 +1,279 @@
+export interface Station {
+  id: number;
+  nome: string;
+  session: string;
+  label: string;
+  regiao?: string;
+  offsetOut?: { x: number; y: number };
+  coordx_utm: number;
+  coordy_utm: number;
+  veg_label: string;
+  veg_class: string;
+  fv_score: number;
+  veg_breakdown_pct: Record<string, number>;
+  slope_mean_deg: number;
+  decliv_label: string;
+  decliv_score: number;
+  fa_label: string;
+  fa_score: number;
+  dist_km: number;
+  fd_label: string;
+  fd_score: number;
+  lat: number;
+  lon: number;
+  bairro?: string;
+  hideFromList?: boolean;
+}
+
+export const STATIONS: Station[] = [
+  {
+    id: 24,
+    nome: "E. E. M. Castália",
+    session: "EMCASTALIA",
+    label: "Escola Estadual Castalia",
+    regiao: "Castália",
+    offsetOut: { x: 260, y: -260 },
+    coordx_utm: 742673.77,
+    coordy_utm: 7517202.67,
+    veg_label: "Borda de mata (Influência urbana)",
+    veg_class: "Iu",
+    fv_score: 70,
+    veg_breakdown_pct: {
+      Ap: 36.9,
+      Iu: 63.1
+    },
+    slope_mean_deg: 5.57,
+    decliv_label: "Íngreme >30%",
+    decliv_score: 100,
+    fa_label: "Interface urbano-rural",
+    fa_score: 80,
+    dist_km: 4.0,
+    fd_label: "3–5 km",
+    fd_score: 30,
+    lat: -22.4344944912269,
+    lon: -42.6421770940735,
+    bairro: "Castália"
+  },
+  {
+    id: 29,
+    nome: "E. M. Rio das Pedras",
+    session: "EMRPEDRAS",
+    label: "Colégio Rio das Pedras",
+    regiao: "Agrobrasil",
+    offsetOut: { x: 0, y: 0 },
+    coordx_utm: 731319.0,
+    coordy_utm: 7493851.0,
+    veg_label: "Pastagem (Pecuária)",
+    veg_class: "Ap",
+    fv_score: 90,
+    veg_breakdown_pct: {
+      Ap: 100.0
+    },
+    slope_mean_deg: 4.7,
+    decliv_label: "Plano ≤5%",
+    decliv_score: 20,
+    fa_label: "Agropecuária intensa",
+    fa_score: 60,
+    dist_km: 23.43,
+    fd_label: "21–40 km",
+    fd_score: 85,
+    lat: -22.646594910738354,
+    lon: -42.74905097378588,
+    hideFromList: true
+  },
+  {
+    id: 5,
+    nome: "E. M. Lucy Campelo da Fonseca",
+    session: "EMLUCY",
+    label: "Escola Municipal Lucy Campelo da Fonseca",
+    regiao: "Sede",
+    offsetOut: { x: -100, y: -260 },
+    coordx_utm: 742512.63,
+    coordy_utm: 7512753.96,
+    veg_label: "Pastagem (Pecuária)",
+    veg_class: "Ap",
+    fv_score: 90,
+    veg_breakdown_pct: {
+      Ag: 0.4,
+      Ap: 99.6
+    },
+    slope_mean_deg: 8.92,
+    decliv_label: "Moderada 16–30%",
+    decliv_score: 70,
+    fa_label: "Interface urbano-rural",
+    fa_score: 80,
+    dist_km: 2.0,
+    fd_label: "≤ 2 km",
+    fd_score: 10,
+    lat: -22.474068526775664,
+    lon: -42.6429063479559,
+    bairro: "Boa Vista"
+  },
+  {
+    id: 17,
+    nome: "E. E. M. Tiradentes",
+    session: "TIRADENTESCM",
+    label: "Escola Municipal Tiradentes",
+    regiao: "Matumbo",
+    offsetOut: { x: -320, y: -40 },
+    coordx_utm: 727625.0,
+    coordy_utm: 7516018.0,
+    veg_label: "Pastagem (Pecuária)",
+    veg_class: "Ap",
+    fv_score: 90,
+    veg_breakdown_pct: {
+      Ap: 80.4,
+      Ds: 19.6
+    },
+    slope_mean_deg: 4.97,
+    decliv_label: "Plano ≤5%",
+    decliv_score: 20,
+    fa_label: "Agropecuária intensa",
+    fa_score: 60,
+    dist_km: 14.28,
+    fd_label: "11–20 km",
+    fd_score: 70,
+    lat: -22.446989932532386,
+    lon: -42.788168957135966
+  },
+  {
+    id: 0,
+    nome: "Secretaria de Sustentabilidade",
+    session: "SUSTENTABILIDADE1",
+    label: "Prédio da Secretaria de Sustentabilidade",
+    regiao: "Sede",
+    offsetOut: { x: -280, y: 180 },
+    coordx_utm: 741430.0,
+    coordy_utm: 7514139.0,
+    veg_label: "Borda de mata (Influência urbana)",
+    veg_class: "Iu",
+    fv_score: 70,
+    veg_breakdown_pct: {
+      Ap: 5.8,
+      Iu: 94.2
+    },
+    slope_mean_deg: 7.18,
+    decliv_label: "Suave 6–15%",
+    decliv_score: 40,
+    fa_label: "Interface urbano-rural",
+    fa_score: 80,
+    dist_km: 0.45,
+    fd_label: "<=2 km",
+    fd_score: 10,
+    lat: -22.462057193359016,
+    lon: -42.653824108785244,
+    bairro: "Campo do Prado"
+  },
+  {
+    id: 7,
+    nome: "E. M. Almerinda Ferreira de Almeida",
+    session: "ALMERINDACM",
+    label: "Escola Municipal Almerinda Ferreira de Almeida",
+    regiao: "Japuíba",
+    offsetOut: { x: -50, y: 280 },
+    coordx_utm: 737169.0,
+    coordy_utm: 7503247.0,
+    veg_label: "Borda de mata (Influência urbana)",
+    veg_class: "Iu",
+    fv_score: 70,
+    veg_breakdown_pct: {
+      Ag: 11.4,
+      Iu: 88.6
+    },
+    slope_mean_deg: 3.29,
+    decliv_label: "Plano ≤5%",
+    decliv_score: 20,
+    fa_label: "Interface urbano-rural",
+    fa_score: 80,
+    dist_km: 12.42,
+    fd_label: "11–20 km",
+    fd_score: 70,
+    lat: -22.56097224862583,
+    lon: -42.69357459284943,
+    bairro: "Centro - Japuíba"
+  },
+
+  {
+    id: 25,
+    nome: "E. M. Prof. Carmem de Carvalho Pinto",
+    session: "CARMEMCM",
+    label: "Escola Municipal Professora Carmem de Carvalho Pinto",
+    regiao: "Sede",
+    offsetOut: { x: 300, y: 0 },
+    coordx_utm: 741550.59,
+    coordy_utm: 7514339.53,
+    veg_label: "Borda de mata (Influência urbana)",
+    veg_class: "Iu",
+    fv_score: 70,
+    veg_breakdown_pct: {
+      Ap: 15.9,
+      Iu: 84.1
+    },
+    slope_mean_deg: 10.66,
+    decliv_label: "Suave 6–15%",
+    decliv_score: 40,
+    fa_label: "Interface urbano-rural",
+    fa_score: 80,
+    dist_km: 0.18,
+    fd_label: "<=2 km",
+    fd_score: 10,
+    lat: -22.453000,
+    lon: -42.646000,
+    bairro: "Campo do Prado"
+  },
+  {
+    id: 16,
+    nome: "E. M. Funchal",
+    session: "EMFUNCHALCM2",
+    label: "Escola Municipal Funchal",
+    regiao: "Funchal",
+    offsetOut: { x: 220, y: 240 },
+    coordx_utm: 734114.71,
+    coordy_utm: 7507441.78,
+    veg_label: "Pastagem (Pecuária)",
+    veg_class: "Ap",
+    fv_score: 90,
+    veg_breakdown_pct: {
+      Ap: 100.0
+    },
+    slope_mean_deg: 4.0,
+    decliv_label: "Plano ≤5%",
+    decliv_score: 20,
+    fa_label: "Interface urbano-rural",
+    fa_score: 80,
+    dist_km: 11.6,
+    fd_label: "11–20 km",
+    fd_score: 70,
+    lat: -22.523010799439547,
+    lon: -42.72369142773958
+  },
+  {
+    id: 34,
+    nome: "E. E. M. Prof. Carlos Brandão",
+    session: "BRANDAOCM1",
+    label: "Escola Municipal Professor Carlos Brandão",
+    regiao: "Faraó de Baixo",
+    offsetOut: { x: 0, y: 0 },
+    coordx_utm: 744104.0,
+    coordy_utm: 7507485.0,
+    veg_label: "Pastagem (Pecuária)",
+    veg_class: "Ap",
+    fv_score: 90,
+    veg_breakdown_pct: {
+      Ap: 100.0
+    },
+    slope_mean_deg: 6.99,
+    decliv_label: "Suave 6–15%",
+    decliv_score: 40,
+    fa_label: "Agropecuária intensa",
+    fa_score: 60,
+    dist_km: 7.58,
+    fd_label: "6–10 km",
+    fd_score: 50,
+    lat: -22.521737860006247,
+    lon: -42.62683113068656,
+    hideFromList: true
+  }
+];
+
+export const CONTROL_POINT_LABEL = "Defesa Civil de Cachoeiras de Macacu";

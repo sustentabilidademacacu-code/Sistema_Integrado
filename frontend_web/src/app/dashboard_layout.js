@@ -4,6 +4,7 @@ import LoginWrapper from './LoginWrapper';
 import LogoutButton from './LogoutButton';
 import OcorrenciaCard from './OcorrenciaCard';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,7 +61,7 @@ function Navbar() {
 
 function Sidebar({ secretarias, estacoes }) {
   return (
-    <aside className="w-80 bg-slate-950 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
+    <aside className="w-80 bg-[#03132e] border-r border-[#133570] flex flex-col z-10 shadow-2xl">
       <nav className="flex-1 p-4 overflow-y-auto">
         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 mt-2 px-2">Articulação Intersetorial</p>
         <ul className="space-y-1 mb-8">
@@ -78,7 +79,7 @@ function Sidebar({ secretarias, estacoes }) {
         </p>
         <div className="mb-8 px-1">
           <Link href="/historico">
-            <button className="w-full bg-slate-900 border border-slate-800 text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition-all shadow-sm flex items-center justify-between">
+            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between">
               Histórico de Ocorrências
               <span>→</span>
             </button>
@@ -90,7 +91,7 @@ function Sidebar({ secretarias, estacoes }) {
         </p>
         <div className="space-y-3 px-1">
           {estacoes.map(est => (
-            <div key={est.id} className="bg-slate-900 border border-slate-800 rounded-lg p-3">
+            <div key={est.id} className="bg-[#0a234f] border border-[#133570] rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-slate-300">{est.nome}</span>
                 <span className={`w-2 h-2 rounded-full ${est.ativa ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-red-500'}`}></span>
@@ -98,19 +99,19 @@ function Sidebar({ secretarias, estacoes }) {
               {est.ultima_leitura ? (
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {est.ultima_leitura.chuva_mm !== null && (
-                    <div className="bg-slate-950 rounded p-2 flex flex-col items-center justify-center border border-slate-800/50">
+                    <div className="bg-[#03132e] rounded p-2 flex flex-col items-center justify-center border border-[#133570]/50">
                       <span className="text-[10px] text-slate-500 uppercase mb-1">Chuva</span>
                       <span className="text-sm font-black text-blue-400">{est.ultima_leitura.chuva_mm}mm</span>
                     </div>
                   )}
                   {est.ultima_leitura.nivel_rio_metros !== null && (
-                    <div className="bg-slate-950 rounded p-2 flex flex-col items-center justify-center border border-slate-800/50">
+                    <div className="bg-[#03132e] rounded p-2 flex flex-col items-center justify-center border border-[#133570]/50">
                       <span className="text-[10px] text-slate-500 uppercase mb-1">Nível Rio</span>
                       <span className="text-sm font-black text-emerald-400">{est.ultima_leitura.nivel_rio_metros}m</span>
                     </div>
                   )}
                   {est.ultima_leitura.temperatura_c !== null && (
-                    <div className="bg-slate-950 rounded p-2 flex flex-col items-center justify-center border border-slate-800/50">
+                    <div className="bg-[#03132e] rounded p-2 flex flex-col items-center justify-center border border-[#133570]/50">
                       <span className="text-[10px] text-slate-500 uppercase mb-1">Temp.</span>
                       <span className="text-sm font-black text-orange-400">{est.ultima_leitura.temperatura_c}ºC</span>
                     </div>
@@ -124,8 +125,8 @@ function Sidebar({ secretarias, estacoes }) {
         </div>
       </nav>
       
-      <div className="p-6 border-t border-slate-800">
-        <button className="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+      <div className="p-6 border-t border-[#133570]">
+        <button className="w-full bg-[#0a234f] hover:bg-[#133570] text-slate-400 border border-[#1e4896] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
           ⚙️ Configurações Gerais
         </button>
       </div>
@@ -141,22 +142,38 @@ export default async function Home() {
   let estacoes = []; 
   
   try {
-    const resSec = await fetch('http://127.0.0.1:8000/api/secretarias/', { cache: 'no-store' });
-    if (resSec.ok) secretarias = await resSec.json();
-    
-    const resOco = await fetch('http://127.0.0.1:8000/api/ocorrencias/', { cache: 'no-store' });
-    if (resOco.ok) ocorrencias = await resOco.json();
+    const [resSec, resOco, resEst] = await Promise.all([
+      supabase.from('secretarias').select('*'),
+      supabase.from('ocorrencias').select('*'),
+      supabase.from('mapa_atual').select('*')
+    ]);
 
-    const resEst = await fetch('http://127.0.0.1:8000/api/estacoes-meteorologicas/', { cache: 'no-store' });
-    if (resEst.ok) estacoes = await resEst.json();
+    if (resSec.data) {
+      secretarias = resSec.data;
+    }
+    if (resOco.data) {
+      ocorrencias = resOco.data.filter(oco => oco.status_publico !== 'Concluido');
+    }
+    if (resEst.data) {
+      estacoes = resEst.data.map((est, index) => ({
+        id: index,
+        nome: est.nome_escola,
+        ativa: true,
+        ultima_leitura: {
+          chuva_mm: est.pluviometro || 0,
+          nivel_rio_metros: null,
+          temperatura_c: null
+        }
+      }));
+    }
 
   } catch (error) {
-    console.error("Erro ao conectar com o Django:", error);
+    console.error("Erro ao conectar com o Supabase:", error);
   }
 
   return (
     <LoginWrapper>
-      <div className="h-screen flex flex-col font-sans overflow-hidden bg-slate-950">
+      <div className="h-screen flex flex-col font-sans overflow-hidden bg-[#03132e]">
         
         <Navbar />
 
@@ -164,7 +181,7 @@ export default async function Home() {
           
           <Sidebar secretarias={secretarias} estacoes={estacoes} />
 
-          <main className="flex-1 overflow-y-auto p-8 bg-slate-900">
+          <main className="flex-1 overflow-y-auto p-8 bg-[#0a234f]">
             
             {/* CABEÇALHO DA PÁGINA (Antes ficava embaixo do mapa) */}
             <div className="mb-6 flex items-center justify-between">
@@ -175,7 +192,7 @@ export default async function Home() {
               
               <div className="flex items-center gap-4">
                 
-                <div className="px-4 py-2 bg-slate-800 rounded-lg text-sm text-slate-300 font-medium border border-slate-700">
+                <div className="px-4 py-2 bg-[#133570] rounded-lg text-sm text-slate-300 font-medium border border-[#1e4896]">
                   Total Ativo: <span className="font-bold text-white text-base">{ocorrencias.length}</span>
                 </div>
               </div>
@@ -199,7 +216,7 @@ export default async function Home() {
                 ))}
               </div>
             ) : (
-              <div className="w-full p-10 bg-slate-950 rounded-xl border border-dashed border-slate-800 text-center shadow-inner">
+              <div className="w-full p-10 bg-[#03132e] rounded-xl border border-dashed border-[#133570] text-center shadow-inner">
                 <p className="text-slate-500 font-medium">Nenhum evento climático extremo ou vulnerabilidade crítica registrada em operação no momento.</p>
               </div>
             )}

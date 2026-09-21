@@ -1,13 +1,20 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function LogoutButton() {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('smiic_auth_token');
-    window.location.reload();
+  const handleLogout = async () => {
+    setLoading(true);
+    await supabase.auth.signOut();
+    localStorage.removeItem('smiic_perfil');
+    localStorage.removeItem('smiic_secretaria_cor');
+    localStorage.removeItem('smiic_secretaria_nome');
+    localStorage.removeItem('smiic_secretaria_id');
+    window.location.href = '/';
   };
 
   return (
@@ -28,9 +35,10 @@ export default function LogoutButton() {
           <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap pl-2 pr-1 uppercase tracking-wider">Sair do sistema?</span>
           <button 
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-black transition-all shadow-sm"
+            disabled={loading}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-black transition-all shadow-sm disabled:opacity-50"
           >
-            SIM
+            {loading ? '...' : 'SIM'}
           </button>
           <button 
             onClick={() => setShowConfirm(false)}

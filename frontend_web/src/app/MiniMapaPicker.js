@@ -41,7 +41,9 @@ export default function MiniMapaPicker({ onLocationSelected, initialLat, initial
   // Sincroniza caso a barra de endereço jogue novas coordenadas para cá
   useEffect(() => {
     if (initialLat && initialLng) {
-      setMarkerPos([parseFloat(initialLat), parseFloat(initialLng)]);
+      queueMicrotask(() => {
+        setMarkerPos([parseFloat(initialLat), parseFloat(initialLng)]);
+      });
     }
   }, [initialLat, initialLng]);
   

@@ -1,29 +1,34 @@
-# ESTRATÉGIA DE DADOS: TOPOGRAFIA E HIDROLOGIA (INUNDAÇÕES)
+# ESTRATÉGIA DE DADOS: TOPOGRAFIA, HIDROLOGIA E INCÊNDIOS
 
-Para prever inundações em lavouras, áreas rurais e bairros históricos de Cachoeiras de Macacu, o Sistema Municipal não pode depender apenas da chuva local. Ele precisa calcular o fluxo de água que desce das cabeceiras (Serra) em direção à planície.
+O Sistema Municipal Integrado de Inteligência Climática (SMIIC) precisa prever tanto a descida brutal das águas (inundações na planície) quanto o avanço rápido do fogo (incêndios florestais). O cruzamento georreferenciado no Leaflet/PostGIS é o coração do sistema.
 
-Para isso, o banco de dados geográfico (PostGIS) será alimentado por duas categorias de dados externos:
+Para isso, a base de dados cartográfica e ambiental cruza diversas camadas estáticas e dinâmicas:
 
-## 1. DADOS ESTÁTICOS (O Mapa do Relevo e Bacias)
-Para saber *para onde* a água vai correr e *onde* ela vai empoçar, precisamos dos dados de Relevo (Declividade).
+## 1. DADOS ESTÁTICOS (Topografia e Bacias Hidrográficas)
+Para saber *para onde* a água vai correr ou *quão rápido* o fogo vai subir um morro, usamos dados de relevo.
 
 * **Modelo Digital de Elevação (MDE) e Declividade:** 
   * **Onde pegar:** Projeto **TOPODATA (INPE)** ou **SRTM (USGS/NASA)**. 
-  * **O que é:** Eles fornecem um mapa 3D gratuito do Brasil inteiro com resolução de 30 metros. Nós jogamos isso no nosso sistema, e ele desenha automaticamente onde é íngreme (água desce rápido) e onde é bacia/planície (água acumula e alaga).
-* **Desenho das Bacias e Rios:**
-  * **Onde pegar:** **Agência Nacional de Águas (ANA)** (Base Hidrográfica Ottocodificada) e **IBGE**.
-  * **O que é:** Um arquivo (Shapefile) que tem o traçado exato de todos os rios grandes e pequenos de Cachoeiras de Macacu, e mostra exatamente de onde a água vem (os rios que desembocam no Rio Macacu).
+  * **Uso na Enchente:** O sistema desenha onde o terreno é íngreme (água desce rápido) e onde é bacia/planície (água acumula e alaga).
+  * **Uso no Incêndio (IRIF):** O fogo avança muito mais rápido morro acima. A declividade é injetada na fórmula do IRIF junto com o tipo de vegetação.
+* **Desenho das Bacias, Rios e GeoJSONs Municipais:**
+  * **Fonte:** **ANA** (Base Hidrográfica Ottocodificada) e arquivos locais (Localidades.geojson e Bairros.geojson inseridos no frontend Next.js).
+  * **Uso:** Mostra o traçado dos rios desembocando no Rio Macacu e as áreas habitadas (interface urbano-rural).
 
-## 2. DADOS DINÂMICOS (O Nível da Água em Tempo Real)
-O sistema precisa de "Fluviômetros" (sensores que medem a altura da água do rio, e não a chuva do céu). A Prefeitura não precisa comprar todos eles, pois o Estado e a União já possuem sensores na bacia do Rio Guapi-Macacu.
+## 2. DADOS DINÂMICOS (Sensores e Telemetria em Tempo Real)
+O sistema lê sensores em tempo real através de rotas Serverless e Edge Functions (Supabase).
 
-* **Sistema de Alerta de Cheias do INEA-RJ:** O Governo do Estado possui estações telemétricas espalhadas pelos rios. O nosso Motor de Regras vai puxar (via API) o nível do Rio Macacu e seus afluentes a cada 15 minutos.
-* **Rede Hidrometeorológica Nacional (ANA / CEMADEN):** Consultamos em tempo real os sensores localizados *antes* de Cachoeiras de Macacu (nas cabeceiras da Serra). 
+* **Sistema de Alerta de Cheias (INEA/CEMADEN):** Sensores telemétricos (fluviômetros e pluviômetros) espalhados pelos rios Macacu, Guapiaçu, etc. Lidos via Edge Functions a cada 15 minutos para medir o volume real das calhas e popular o PostgreSQL no Supabase.
+* **Rede Municipal Exaclima (Escolas):** Dados puxados diretamente da API Exaclima, trazendo vento, temperatura e umidade.
 
-## 3. A INTELIGÊNCIA DO SISTEMA (Como o Motor de Regras Salva as Lavouras)
-Com esses dados integrados, a regra matemática do nosso software funcionará assim:
+## 3. A INTELIGÊNCIA DO SISTEMA (Ação do Motor de Regras)
 
-1. **Monitoramento Upstream (Lá em cima):** O radar do CEMADEN ou a estação da ANA detecta chuva extrema (100mm) em Nova Friburgo / Serra dos Órgãos.
-2. **Cálculo de Tempo:** O sistema calcula que a água vai demorar "X horas" para descer a serra e chegar nas planícies de Cachoeiras de Macacu (Tempo de Concentração da Bacia).
-3. **Identificação de Vulnerabilidade:** O sistema olha para o mapa de Declividade (Topodata) e identifica as lavouras e moradias que estão em áreas planas perto da calha do rio.
-4. **Alerta Antecipado:** Horas *antes* de o rio transbordar na cidade, a Sala de Situação recebe o Alerta de Inundação. A Defesa Civil aciona o alerta no Super App para os produtores rurais tirarem animais das áreas baixas e moradores levantarem móveis, **mesmo que não esteja chovendo uma gota em Cachoeiras de Macacu naquele momento**.
+**CENÁRIO 1: Inundação (Ameaça Hídrica)**
+1. **Monitoramento Upstream (Lá em cima):** O radar do CEMADEN ou a estação da ANA detecta chuva extrema (100mm) nas cabeceiras da Serra.
+2. **Cálculo de Tempo:** As Edge Functions ou lógica do Next.js calculam o "Tempo de Concentração da Bacia" (quantas horas a água leva para chegar à planície de Papucaia).
+3. **Alerta Antecipado:** Horas *antes* de o rio transbordar na cidade, a Sala de Situação (`/gabinete`) recebe o Alerta. O Prefeito eleva o Nível Operacional e aciona o plano de contingência, disparando viaturas para evacuar as áreas ribeirinhas mapeadas na MMVC.
+
+**CENÁRIO 2: Fogo (Ameaça Florestal - IRIF)**
+1. **Monitoramento do Microclima:** As escolas (Exaclima) registram 38°C de temperatura, umidade abaixo de 30% e 14 dias sem chuva na região.
+2. **Cálculo de Vulnerabilidade (IRIF):** O sistema cruza esse clima seco com o fato de a escola estar ao lado de "Pastagem (Pecuária)" e em "Declividade Moderada".
+3. **Alerta Crítico:** A pontuação atinge "N5 - Grave" e o ícone da escola no mapa brilha vermelho no painel. O Gabinete utiliza o botão "ACIONAR" e despacha a Secretaria de Meio Ambiente e a Defesa Civil para proibirem queimadas naquela região, antes que qualquer fagulha seja acesa.

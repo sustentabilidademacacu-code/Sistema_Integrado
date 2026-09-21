@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function OcorrenciaCard({ oco, isOperacional = false }) {
   const [loading, setLoading] = useState(false);
@@ -14,18 +15,15 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
     
     setLoading(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/ocorrencias/${oco.id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          status_publico: 'Concluido',
-          relatorio_resolucao: relatorio 
-        })
-      });
+      const { error } = await supabase
+        .from('ocorrencias')
+        .update({ status: 'Concluido', relatorio_resolucao: relatorio })
+        .eq('id', oco.id);
       
-      if (res.ok) {
+      if (!error) {
         window.location.reload();
       } else {
+        console.error(error);
         alert("Erro ao atualizar a ocorrência.");
         setLoading(false);
       }
@@ -36,7 +34,7 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
     }
   };
 
-  if (oco.status_publico === 'Concluido') {
+  if (oco.status === 'Concluido') {
     return null; 
   }
 
@@ -44,7 +42,7 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
 
   return (
     <div 
-      className="bg-black border border-neutral-800 border-l-[6px] p-6 rounded-xl shadow-lg flex flex-col justify-between group transition-transform hover:-translate-y-1"
+      className="bg-[#03132e] border border-[#133570] border-l-[6px] p-6 rounded-xl shadow-lg flex flex-col justify-between group transition-transform hover:-translate-y-1"
       style={{ borderLeftColor: corSec }}
     >
       <div>
@@ -52,8 +50,8 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
           <span className="px-3 py-1 text-xs font-black tracking-wider rounded bg-red-950 text-red-500 border border-red-900">
             {oco.prioridade_acao}
           </span>
-          <span className="text-[10px] font-semibold text-neutral-300 bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 uppercase tracking-wider">
-            {oco.status_publico}
+          <span className="text-[10px] font-semibold text-neutral-300 bg-[#133570] px-3 py-1 rounded-full border border-[#1e4896] uppercase tracking-wider">
+            {oco.status}
           </span>
         </div>
         <h4 className="text-lg font-bold text-white mb-2">{oco.categoria}</h4>
@@ -78,13 +76,13 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
           </p>
         )}
         
-        <p className="text-sm text-neutral-300 mb-4 bg-neutral-900/50 p-3 rounded-lg border border-neutral-800">
-          "{oco.descricao}"
+        <p className="text-sm text-neutral-300 mb-4 bg-[#0a234f]/50 p-3 rounded-lg border border-[#133570]">
+          &quot;{oco.descricao}&quot;
         </p>
       </div>
       
       {!isResolving ? (
-        <div className="mt-2 pt-4 border-t border-neutral-800 flex items-center justify-between">
+        <div className="mt-2 pt-4 border-t border-[#133570] flex items-center justify-between">
           <div className="flex flex-col">
             <p className="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">
               Vuln. Associada:
@@ -126,11 +124,11 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
           )}
         </div>
       ) : (
-        <div className="mt-2 pt-4 border-t border-neutral-800 flex flex-col gap-3">
+        <div className="mt-2 pt-4 border-t border-[#133570] flex flex-col gap-3">
           <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Relatório de Resolução (Como foi resolvido?)</label>
           <textarea 
             rows="2"
-            className="w-full bg-black border border-neutral-700 rounded-lg p-2 text-sm text-neutral-200 outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-[#03132e] border border-[#1e4896] rounded-lg p-2 text-sm text-neutral-200 outline-none focus:border-emerald-500 transition-colors"
             placeholder="Ex: Equipe enviada ao local, desobstrução da via realizada..."
             value={relatorio}
             onChange={(e) => setRelatorio(e.target.value)}

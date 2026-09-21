@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 // Função para extrair o nome padronizado dos arquivos geográficos
 const extrairNome = (props) => {
@@ -17,6 +18,8 @@ export default function FormNovaOcorrencia() {
   const [geojsons, setGeojsons] = useState({ logs: null });
 
   const [listaVulnerabilidades, setListaVulnerabilidades] = useState([]);
+  const [listaSecretarias, setListaSecretarias] = useState([]);
+  const [secretariaResponsavel, setSecretariaResponsavel] = useState('');
 
   // Estado que controla o menu suspenso de categoria
   const [categoriaSelect, setCategoriaSelect] = useState('Deslizamento de Terra');
@@ -117,14 +120,23 @@ export default function FormNovaOcorrencia() {
 
     const fetchVulnerabilidades = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/vulnerabilidades-mmvc/');
-        if (res.ok) setListaVulnerabilidades(await res.json());
+        const { data, error } = await supabase.from('vulnerabilidades_mmvc').select('*');
+        if (data) setListaVulnerabilidades(data);
+        if (error) console.error(error);
       } catch (e) { console.error(e); }
     };
 
     if (isOpen) {
       carregarDados();
       fetchVulnerabilidades();
+
+      // Carrega secretarias para vincular à ocorrência
+      supabase.from('secretarias').select('id, nome').then(({ data }) => {
+        if (data && data.length > 0) {
+          setListaSecretarias(data);
+          setSecretariaResponsavel(data[0].id);
+        }
+      });
     }
   }, [isOpen]);
 
@@ -167,24 +179,19 @@ export default function FormNovaOcorrencia() {
     setLoading(true);
     
     // Agora enviamos exatamente o que a pessoa digitou, sem coordenadas
-    const payload = { ...formData };
+    const payload = { ...formData, secretaria_id: secretariaResponsavel || null };
     if (!payload.vulnerabilidade) {
       payload.vulnerabilidade = null;
     }
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/ocorrencias/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const { error } = await supabase.from('ocorrencias').insert([payload]);
 
-      if (res.ok) {
+      if (!error) {
         setIsOpen(false);
         window.location.reload(); 
       } else {
-        const erroDoDjango = await res.json();
-        alert('O Django recusou salvar! Motivo exato:\n' + JSON.stringify(erroDoDjango, null, 2));
+        alert('Erro ao salvar no banco de dados!\nMotivo exato:\n' + JSON.stringify(error, null, 2));
       }
     } catch (error) {
       console.error(error);
@@ -207,7 +214,7 @@ export default function FormNovaOcorrencia() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#03132e]/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl border border-slate-200 my-auto max-h-[calc(100vh-1rem)] sm:max-h-[85vh]">
             
             <div className="bg-[#022888] p-3 flex justify-between items-center text-white rounded-t-xl">
@@ -296,6 +303,21 @@ export default function FormNovaOcorrencia() {
                     <option value="P4">MÉDIA</option>
                     <option value="P2">ALTA</option>
                     <option value="P1">CRÍTICA</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Secretaria Responsável *</label>
+                  <select
+                    value={secretariaResponsavel}
+                    onChange={(e) => setSecretariaResponsavel(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888] bg-white"
+                    required
+                  >
+                    <option value="">Selecione a secretaria responsável...</option>
+                    {listaSecretarias.map(sec => (
+                      <option key={sec.id} value={sec.id}>{sec.nome}</option>
+                    ))}
                   </select>
                 </div>
 
