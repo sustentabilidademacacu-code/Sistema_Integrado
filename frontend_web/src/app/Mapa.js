@@ -40,7 +40,21 @@ const getIconeEstacao = (color = 'bg-blue-500') => new L.DivIcon({
   popupAnchor: [0, -16],
 });
 
-const coresPaleta = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
+// Paleta de cores sóbrias para UCs: tons naturais de azul, verde e ciano
+const coresPaleta = [
+  '#0e7490', // ciano escuro
+  '#047857', // esmeralda escuro
+  '#166534', // verde escuro
+  '#0f766e', // teal
+  '#1d4ed8', // azul profundo
+  '#065f46', // esmeralda muito escuro
+  '#155e75', // ciano muito escuro
+  '#0369a1', // azul oceano
+  '#0c4a6e', // azul marinho
+  '#14532d', // verde floresta
+  '#134e4a', // teal escuro
+  '#1e3a5f', // azul noturno
+];
 
 const getCorParaUC = (nome) => {
   if (!nome) return '#15803d';
@@ -177,7 +191,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
               mostrarLocalidades ? 'bg-blue-600/20 text-blue-300 border border-blue-500/35' : 'text-slate-500 border border-transparent hover:text-slate-300 hover:bg-white/5'
             }`}>
             <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarLocalidades ? 'bg-blue-400 shadow-[0_0_6px_#60a5fa]' : 'bg-slate-700'}`} />
-            Limites Municipais
+            Localidades
           </button>
 
           {/* Bairros */}
@@ -198,8 +212,8 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
             Hidrografia
           </button>
 
-          {/* UCs com dropdown */}
-          <div className={`relative ${fullScreen ? '' : 'flex flex-col'}`}>
+          {/* UCs — no painel embutido: toggle simples. No fullscreen: dropdown por UC */}
+          <div className="relative flex flex-col">
             <button
               onClick={() => {
                 const next = !mostrarUCs;
@@ -212,14 +226,18 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
               }`}
             >
               <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarUCs ? 'bg-green-400 shadow-[0_0_6px_#4ade80]' : 'bg-slate-700'}`} />
-              UCs
-              {mostrarUCs && <svg className="w-2.5 h-2.5 ml-auto opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>}
+              Unid. de Conservação
+              {/* Seta pulsando — só no fullscreen, indica que dá para selecionar individualmente */}
+              {fullScreen && mostrarUCs && (
+                <svg className="w-2.5 h-2.5 ml-auto animate-pulse opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                </svg>
+              )}
             </button>
 
-            {mostrarUCs && ucsData && (
-              <div className={`${
-                fullScreen ? 'absolute top-full left-0 mt-2' : 'mt-1'
-              } bg-[#050f20]/98 border border-white/12 rounded-xl shadow-2xl p-2 z-50 flex flex-col gap-0.5 max-h-52 overflow-y-auto custom-scrollbar min-w-[190px]`}>
+            {/* Dropdown individual — só no fullscreen */}
+            {fullScreen && mostrarUCs && ucsData && (
+              <div className="mt-1 bg-[#050f20]/98 border border-white/12 rounded-xl shadow-2xl p-2 z-50 flex flex-col gap-0.5 max-h-52 overflow-y-auto custom-scrollbar min-w-[190px]">
                 <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest px-2 pt-1 pb-0.5">Selecionar UC</p>
                 {Array.from(new Set(ucsData.features.map(f => f.properties.nome_uc).filter(Boolean))).sort().map((nome, i) => {
                   const cor = getCorParaUC(nome);
@@ -231,7 +249,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
                         ativo ? 'text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                       }`}
                     >
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: ativo ? cor : '#334155', boxShadow: ativo ? `0 0 5px ${cor}` : 'none' }} />
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: ativo ? cor : '#334155', boxShadow: ativo ? `0 0 4px ${cor}80` : 'none' }} />
                       <span className="truncate" title={nome}>{nome}</span>
                     </button>
                   );
