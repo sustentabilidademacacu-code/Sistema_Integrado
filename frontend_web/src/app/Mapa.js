@@ -54,6 +54,12 @@ const coresPaleta = [
 
 const getCorParaUC = (nome) => {
   if (!nome) return '#15803d';
+  
+  // Parque dos Três Picos com cor fixada: verde musgo escuro e forte
+  if (nome.toLowerCase().includes('três picos') || nome.toLowerCase().includes('tres picos')) {
+    return '#2d4a22'; 
+  }
+  
   let hash = 0;
   for (let i = 0; i < nome.length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash);
   return coresPaleta[Math.abs(hash) % coresPaleta.length];
