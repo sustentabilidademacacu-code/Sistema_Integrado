@@ -82,9 +82,8 @@ function parseReadings(raw) {
 }
 
 export async function GET(request) {
-  const resultados = [];
-
-  for (const st of STATIONS) {
+  // Dispara todas as requisições em paralelo para não travar a Vercel
+  const promessas = STATIONS.map(async (st) => {
     try {
       const raw = await fetchStationData(st.session);
 
@@ -137,11 +136,13 @@ export async function GET(request) {
 
       if (upsertError) throw upsertError;
 
-      resultados.push({ session: st.session, ok: true });
+      return { session: st.session, ok: true };
     } catch (err) {
-      resultados.push({ session: st.session, ok: false, erro: String(err) });
+      return { session: st.session, ok: false, erro: String(err) };
     }
-  }
+  });
+
+  const resultados = await Promise.all(promessas);
 
   return NextResponse.json({ success: true, resultados });
 }
