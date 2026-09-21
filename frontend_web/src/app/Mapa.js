@@ -25,10 +25,19 @@ const getIconByPriority = (priority) => {
 
 const getIconeEstacao = (color = 'bg-blue-500') => new L.DivIcon({
   className: 'bg-transparent',
-  html: `<div class="w-4 h-4 ${color} rounded-full border-2 border-white shadow-[0_0_10px_rgba(0,0,0,0.5)] flex items-center justify-center animate-pulse"></div>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-  popupAnchor: [0, -10],
+  html: `<div class="relative flex items-center justify-center w-8 h-8">
+           <div class="absolute w-full h-full ${color} opacity-40 rounded-full animate-ping"></div>
+           <div class="relative w-6 h-6 ${color} rounded-lg border border-white/50 shadow-[0_0_15px_rgba(0,0,0,0.6)] flex items-center justify-center transform rotate-45">
+             <div class="-rotate-45">
+               <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M12 12v.01"></path>
+               </svg>
+             </div>
+           </div>
+         </div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  popupAnchor: [0, -16],
 });
 
 const coresPaleta = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef', '#f43f5e'];
@@ -98,7 +107,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
       layer.bindTooltip(nome, {
         permanent: false,
         direction: 'center',
-        className: 'bg-white/90 backdrop-blur-sm border-none shadow-sm text-slate-700 font-bold text-[10px] uppercase tracking-wider'
+        className: 'bg-[#0a192f]/95 backdrop-blur-md border border-white/10 shadow-2xl text-white font-bold text-[10px] uppercase tracking-widest rounded-lg px-3 py-1.5'
       });
       
       // Se for uma UC, também amarra um Popup detalhado
@@ -106,33 +115,32 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         const { cria_ano, cria_ato, ha_total, esfera, org_gestor, categoria } = feature.properties;
         const area = ha_total ? parseFloat(ha_total).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' ha' : 'Não informada';
         const popupContent = `
-          <div class="flex flex-col gap-1 min-w-[200px]">
-            <strong class="text-slate-800 text-sm leading-tight">${nome}</strong>
-            <span class="text-[10px] font-bold text-slate-500 uppercase">${categoria || 'Unidade de Conservação'}</span>
-            <div class="w-full h-px bg-slate-200 my-1"></div>
-            <div class="text-[11px] text-slate-600 flex flex-col gap-0.5">
-              <p><b>Criação:</b> ${cria_ano || '-'} ${cria_ato ? '(' + cria_ato + ')' : ''}</p>
-              <p><b>Área:</b> ${area}</p>
-              <p><b>Esfera:</b> ${esfera || '-'}</p>
-              <p><b>Gestor:</b> ${org_gestor || '-'}</p>
+          <div class="flex flex-col gap-1 min-w-[220px] text-white">
+            <strong class="text-white text-[13px] leading-tight tracking-wide">${nome}</strong>
+            <span class="text-[9px] font-black text-emerald-400 uppercase tracking-widest">${categoria || 'Unidade de Conservação'}</span>
+            <div class="w-full h-px bg-white/20 my-1"></div>
+            <div class="text-[10px] text-slate-300 flex flex-col gap-1 mt-1">
+              <p><b class="text-slate-400 font-medium">Criação:</b> <span class="text-white">${cria_ano || '-'} ${cria_ato ? '(' + cria_ato + ')' : ''}</span></p>
+              <p><b class="text-slate-400 font-medium">Área:</b> <span class="text-white">${area}</span></p>
+              <p><b class="text-slate-400 font-medium">Esfera:</b> <span class="text-white">${esfera || '-'}</span></p>
+              <p><b class="text-slate-400 font-medium">Gestor:</b> <span class="text-white">${org_gestor || '-'}</span></p>
             </div>
           </div>
         `;
-        layer.bindPopup(popupContent, { className: 'rounded-xl shadow-lg border-none' });
+        layer.bindPopup(popupContent, { className: 'custom-dark-popup' });
       }
 
       layer.on({
         mouseover: (e) => {
           const l = e.target;
-          l.setStyle({ fillOpacity: 0.5, weight: 3 });
+          l.setStyle({ fillOpacity: 0.4, weight: 3 });
         },
         mouseout: (e) => {
           const l = e.target;
-          // Retorna o estilo ao normal
           if (feature.properties?.nome_uc) {
-            l.setStyle({ fillOpacity: 0.3, weight: 2 });
+            l.setStyle({ fillOpacity: 0.15, weight: 1.5 });
           } else {
-            l.setStyle({ fillOpacity: 0.08, weight: 1.5 });
+            l.setStyle({ fillOpacity: 0.08, weight: 1 });
           }
         }
       });
@@ -142,36 +150,36 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
   return (
     <div className={`relative w-full z-0 bg-[#0a234f] ${fullScreen ? 'h-screen' : 'h-[450px] xl:h-[600px] rounded-xl overflow-hidden shadow-inner'}`}>
       
-      <div className="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-lg border border-slate-200 flex flex-col gap-2 max-w-[250px]">
-        <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer hover:text-blue-600 transition-colors">
+      <div className="absolute top-4 left-4 z-[1000] bg-[#0a192f]/85 backdrop-blur-xl p-3 rounded-xl shadow-2xl border border-white/10 flex flex-col gap-3 max-w-[260px]">
+        <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-blue-400 transition-colors uppercase tracking-wider">
           <input 
             type="checkbox" 
             checked={mostrarLocalidades} 
             onChange={(e) => setMostrarLocalidades(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-blue-500 focus:ring-blue-500/50"
           />
           Limites Municipais
         </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer hover:text-emerald-600 transition-colors">
+        <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-emerald-400 transition-colors uppercase tracking-wider">
           <input 
             type="checkbox" 
             checked={mostrarBairros} 
             onChange={(e) => setMostrarBairros(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+            className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-emerald-500 focus:ring-emerald-500/50"
           />
-          Bairros (Zona Urbana)
+          Bairros (Urbano)
         </label>
-        <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer hover:text-cyan-600 transition-colors">
+        <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-cyan-400 transition-colors uppercase tracking-wider">
           <input 
             type="checkbox" 
             checked={mostrarRios} 
             onChange={(e) => setMostrarRios(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+            className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-cyan-500 focus:ring-cyan-500/50"
           />
           Hidrografia (Rios)
         </label>
         <div className="flex flex-col">
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer hover:text-green-700 transition-colors">
+          <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-green-400 transition-colors uppercase tracking-wider">
             <input 
               type="checkbox" 
               checked={mostrarUCs} 
@@ -183,15 +191,15 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
                   setUcsAtivas([]);
                 }
               }}
-              className="w-4 h-4 rounded border-slate-300 text-green-700 focus:ring-green-600"
+              className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-green-500 focus:ring-green-500/50"
             />
-            Unidades de Conservação
+            Unidades Conservação
           </label>
           
           {mostrarUCs && ucsData && (
-            <div className="ml-6 mt-1.5 flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-2" style={{scrollbarWidth: 'thin'}}>
+            <div className="ml-6 mt-2 flex flex-col gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
               {Array.from(new Set(ucsData.features.map(f => f.properties.nome_uc).filter(Boolean))).sort().map((nome, i) => (
-                   <label key={i} className="flex items-center gap-2 text-[10px] text-slate-600 font-medium cursor-pointer hover:text-green-600">
+                   <label key={i} className="flex items-center gap-2 text-[9px] text-slate-400 font-bold tracking-wide uppercase cursor-pointer hover:text-white transition-colors">
                      <input 
                        type="checkbox" 
                        checked={ucsAtivas.includes(nome)} 
@@ -199,7 +207,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
                          if (e.target.checked) setUcsAtivas([...ucsAtivas, nome]);
                          else setUcsAtivas(ucsAtivas.filter(n => n !== nome));
                        }}
-                       className="w-3 h-3 rounded border-slate-300 text-green-600 focus:ring-green-500"
+                       className="w-3 h-3 rounded bg-[#0f284e] border-white/20 text-green-500 focus:ring-green-500/50"
                      />
                      <span className="truncate w-full" title={nome}>{nome}</span>
                    </label>
@@ -210,11 +218,11 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
         {!fullScreen && (
           <>
-            <div className="w-full h-px bg-slate-200 my-1"></div>
+            <div className="w-full h-px bg-white/10 my-2"></div>
             <a 
               href="/mapa-completo" 
               target="_blank"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded py-2 px-4 text-center font-bold text-xs uppercase tracking-wider transition-colors shadow-sm flex items-center justify-center gap-2"
+              className="w-full bg-[#1e4896]/90 hover:bg-blue-600 text-white rounded-lg py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2 border border-white/10"
             >
               Expandir Mapa 
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
@@ -223,9 +231,17 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         )}
       </div>
 
-      <MapContainer scrollWheelZoom={false} boxZoom={false} center={posicaoEnquadrada} zoom={11} zoomControl={false} style={{ height: '100%', width: '100%', background: '#0f172a' }}>
+      <MapContainer scrollWheelZoom={false} boxZoom={false} center={posicaoEnquadrada} zoom={11} zoomControl={false} style={{ height: '100%', width: '100%', background: '#0a192f' }}>
         <ZoomControl position="bottomright" />
-        <style>{`.leaflet-tile-container img { width: 256.5px !important; height: 256.5px !important; }`}</style>
+        <style>{`
+          .leaflet-tile-container img { width: 256.5px !important; height: 256.5px !important; }
+          .custom-dark-popup .leaflet-popup-content-wrapper { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
+          .custom-dark-popup .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); }
+          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+        `}</style>
 
         <LayersControl position={fullScreen ? "bottomleft" : "topright"} collapsed={false}>
           <LayersControl.BaseLayer checked name="Satélite (Esri World Imagery)">
@@ -282,8 +298,8 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
             data={{...ucsData, features: ucsData.features.filter(f => ucsAtivas.includes(f.properties.nome_uc))}} 
             style={(feature) => ({
               color: getCorParaUC(feature.properties.nome_uc),
-              weight: 2,
-              fillOpacity: 0.3
+              weight: 1.5,
+              fillOpacity: 0.15
             })} 
             onEachFeature={mostrarNomeNoMouse}
           />
