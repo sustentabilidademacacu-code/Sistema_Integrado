@@ -151,14 +151,19 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
       layer.on({
         mouseover: (e) => {
           const l = e.target;
-          l.setStyle({ fillOpacity: 0.4, weight: 3 });
+          l.setStyle({ fillOpacity: 0.65, weight: 3, color: '#ffffff' });
+          l.bringToFront();
         },
         mouseout: (e) => {
           const l = e.target;
           if (props.nome_uc) {
-            l.setStyle({ fillOpacity: 0.15, weight: 1.5 });
+            l.setStyle({ fillOpacity: 0.35, weight: 2.5, color: getCorParaUC(props.nome_uc) });
+          } else if (props.BAIRRO) {
+            l.setStyle({ fillOpacity: 0.25, weight: 2, color: '#047857' });
+          } else if (props.nome_localidade) {
+            l.setStyle({ fillOpacity: 0.25, weight: 2, color: '#1d4ed8' });
           } else {
-            l.setStyle({ fillOpacity: 0.08, weight: 1 });
+            l.setStyle({ fillOpacity: 0.35, weight: 2.5, color: '#0e7490' }); // Rios
           }
         }
       });
@@ -354,7 +359,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           <FeatureGroup>
             <GeoJSON
               data={localidadesData}
-              style={{ color: '#1d4ed8', weight: 1.5, opacity: 0.9, fillOpacity: 0.08 }}
+              style={{ color: '#1d4ed8', weight: 2, fillOpacity: 0.25, fillColor: '#1d4ed8' }}
               onEachFeature={mostrarNomeNoMouse}
             />
           </FeatureGroup>
@@ -363,7 +368,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         {mostrarBairros && bairrosData && (
           <GeoJSON 
             data={bairrosData} 
-            style={{ color: '#10b981', weight: 1.5, fillOpacity: 0.08 }} 
+            style={{ color: '#047857', weight: 2, fillOpacity: 0.25, fillColor: '#047857' }} 
             onEachFeature={mostrarNomeNoMouse}
           />
         )}
@@ -371,7 +376,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         {mostrarRios && riosData && (
           <GeoJSON 
             data={riosData} 
-            style={{ color: '#06b6d4', weight: 2, fillOpacity: 0.5 }} 
+            style={{ color: '#0e7490', weight: 2.5, fillOpacity: 0.4 }} 
             onEachFeature={mostrarNomeNoMouse}
           />
         )}
@@ -382,8 +387,9 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
             data={{...ucsData, features: ucsData.features.filter(f => ucsAtivas.includes(f.properties.nome_uc))}} 
             style={(feature) => ({
               color: getCorParaUC(feature.properties.nome_uc),
-              weight: 1.5,
-              fillOpacity: 0.15
+              weight: 2.5,
+              fillOpacity: 0.35,
+              fillColor: getCorParaUC(feature.properties.nome_uc)
             })} 
             onEachFeature={mostrarNomeNoMouse}
           />
