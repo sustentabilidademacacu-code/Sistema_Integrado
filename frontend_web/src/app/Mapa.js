@@ -171,7 +171,8 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         mouseout: (e) => {
           const l = e.target;
           if (props.nome_uc) {
-            l.setStyle({ fillOpacity: 0.35, weight: 3, color: getCorParaUC(props.nome_uc) });
+            const isTresPicos = props.nome_uc.toLowerCase().includes('três picos') || props.nome_uc.toLowerCase().includes('tres picos');
+            l.setStyle({ fillOpacity: 0.35, weight: isTresPicos ? 4.5 : 3, color: getCorParaUC(props.nome_uc) });
           } else if (props.BAIRRO) {
             l.setStyle({ fillOpacity: 0, weight: 2.5, color: '#047857' });
           } else if (props.nome_localidade) {
@@ -397,19 +398,23 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
         {mostrarUCs && ucsData && (
           <FeatureGroup>
-            {ucsData.features.filter(f => ucsAtivas.includes(f.properties.nome_uc)).map((feature, i) => (
-              <GeoJSON 
-                key={i}
-                data={feature}
-                style={{
-                  color: getCorParaUC(feature.properties.nome_uc),
-                  weight: 3,
-                  fillOpacity: 0.35,
-                  fillColor: getCorParaUC(feature.properties.nome_uc)
-                }} 
-                onEachFeature={mostrarNomeNoMouse}
-              />
-            ))}
+            {ucsData.features.filter(f => ucsAtivas.includes(f.properties.nome_uc)).map((feature, i) => {
+              const nome = feature.properties.nome_uc || '';
+              const isTresPicos = nome.toLowerCase().includes('três picos') || nome.toLowerCase().includes('tres picos');
+              return (
+                <GeoJSON 
+                  key={i}
+                  data={feature}
+                  style={{
+                    color: getCorParaUC(nome),
+                    weight: isTresPicos ? 4.5 : 3,
+                    fillOpacity: 0.35,
+                    fillColor: getCorParaUC(nome)
+                  }} 
+                  onEachFeature={mostrarNomeNoMouse}
+                />
+              );
+            })}
           </FeatureGroup>
         )}
 
