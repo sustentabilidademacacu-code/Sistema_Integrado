@@ -155,96 +155,103 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
   return (
     <div className={`relative w-full z-0 bg-[#0a234f] ${fullScreen ? 'h-screen' : 'h-[450px] xl:h-[600px] rounded-xl overflow-hidden shadow-inner'}`}>
 
-      {/* PAINEL DE CAMADAS — barra horizontal no topo em fullscreen, vertical lateral no painel */}
-      <div className={`absolute z-[1000] bg-[#0a192f]/90 backdrop-blur-xl border border-white/10 shadow-2xl ${
+      {/* ── BARRA DE CAMADAS ─────────── */}
+      <div className={`absolute z-[1000] ${
         fullScreen
-          ? 'top-4 left-1/2 -translate-x-1/2 flex flex-row items-center gap-4 px-5 py-3 rounded-full'
-          : 'top-4 left-4 flex flex-col gap-3 p-3 rounded-xl max-w-[260px]'
+          ? 'top-4 left-1/2 -translate-x-1/2'
+          : 'top-3 left-3'
       }`}>
-        <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-blue-400 transition-colors uppercase tracking-wider">
-          <input 
-            type="checkbox" 
-            checked={mostrarLocalidades} 
-            onChange={(e) => setMostrarLocalidades(e.target.checked)}
-            className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-blue-500 focus:ring-blue-500/50"
-          />
-          Limites Municipais
-        </label>
-        <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-emerald-400 transition-colors uppercase tracking-wider">
-          <input 
-            type="checkbox" 
-            checked={mostrarBairros} 
-            onChange={(e) => setMostrarBairros(e.target.checked)}
-            className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-emerald-500 focus:ring-emerald-500/50"
-          />
-          Bairros (Urbano)
-        </label>
-        <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-cyan-400 transition-colors uppercase tracking-wider">
-          <input 
-            type="checkbox" 
-            checked={mostrarRios} 
-            onChange={(e) => setMostrarRios(e.target.checked)}
-            className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-cyan-500 focus:ring-cyan-500/50"
-          />
-          Hidrografia (Rios)
-        </label>
-        <div className={`relative ${fullScreen ? 'flex items-center' : 'flex flex-col'}`}>
-          <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-green-400 transition-colors uppercase tracking-wider">
-            <input
-              type="checkbox"
-              checked={mostrarUCs}
-              onChange={(e) => {
-                setMostrarUCs(e.target.checked);
-                if (e.target.checked && ucsData) {
-                  setUcsAtivas(ucsData.features.map(f => f.properties.nome_uc));
-                } else {
-                  setUcsAtivas([]);
-                }
-              }}
-              className="w-4 h-4 rounded bg-[#0f284e] border-white/20 text-green-500 focus:ring-green-500/50"
-            />
-            Unidades Conservação
-          </label>
+        <div className={`bg-[#050f20]/92 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.7)] ${
+          fullScreen
+            ? 'flex flex-row items-center gap-1 px-3 py-2 rounded-2xl'
+            : 'flex flex-col gap-1 p-2 rounded-2xl min-w-[190px]'
+        }`}>
+          {/* Label topo — só no painel lateral */}
+          {!fullScreen && (
+            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.15em] px-2 pt-1 pb-0.5">Camadas</p>
+          )}
 
-          {mostrarUCs && ucsData && (
-            <div className={`${
-              fullScreen
-                ? 'absolute top-full left-0 mt-2 bg-[#0a192f]/98 border border-white/20 rounded-xl shadow-2xl p-3 z-50'
-                : 'ml-6 mt-2'
-            } flex flex-col gap-2 max-h-52 overflow-y-auto pr-2 custom-scrollbar min-w-[200px]`}>
-              {Array.from(new Set(ucsData.features.map(f => f.properties.nome_uc).filter(Boolean))).sort().map((nome, i) => (
-                <label key={i} className="flex items-center gap-2 text-[9px] text-slate-400 font-bold tracking-wide uppercase cursor-pointer hover:text-white transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={ucsAtivas.includes(nome)}
-                    onChange={(e) => {
-                      if (e.target.checked) setUcsAtivas([...ucsAtivas, nome]);
-                      else setUcsAtivas(ucsAtivas.filter(n => n !== nome));
-                    }}
-                    className="w-3 h-3 rounded bg-[#0f284e] border-white/20 text-green-500 focus:ring-green-500/50"
-                  />
-                  <span className="truncate w-full" title={nome}>{nome}</span>
-                </label>
-              ))}
-            </div>
+          {/* Limites Municipais */}
+          <button onClick={() => setMostrarLocalidades(v => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+              mostrarLocalidades ? 'bg-blue-600/20 text-blue-300 border border-blue-500/35' : 'text-slate-500 border border-transparent hover:text-slate-300 hover:bg-white/5'
+            }`}>
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarLocalidades ? 'bg-blue-400 shadow-[0_0_6px_#60a5fa]' : 'bg-slate-700'}`} />
+            Limites Municipais
+          </button>
+
+          {/* Bairros */}
+          <button onClick={() => setMostrarBairros(v => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+              mostrarBairros ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/35' : 'text-slate-500 border border-transparent hover:text-slate-300 hover:bg-white/5'
+            }`}>
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarBairros ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]' : 'bg-slate-700'}`} />
+            Bairros
+          </button>
+
+          {/* Hidrografia */}
+          <button onClick={() => setMostrarRios(v => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
+              mostrarRios ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/35' : 'text-slate-500 border border-transparent hover:text-slate-300 hover:bg-white/5'
+            }`}>
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarRios ? 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]' : 'bg-slate-700'}`} />
+            Hidrografia
+          </button>
+
+          {/* UCs com dropdown */}
+          <div className={`relative ${fullScreen ? '' : 'flex flex-col'}`}>
+            <button
+              onClick={() => {
+                const next = !mostrarUCs;
+                setMostrarUCs(next);
+                if (next && ucsData) setUcsAtivas(ucsData.features.map(f => f.properties.nome_uc));
+                else setUcsAtivas([]);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 w-full ${
+                mostrarUCs ? 'bg-green-600/20 text-green-300 border border-green-500/35' : 'text-slate-500 border border-transparent hover:text-slate-300 hover:bg-white/5'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarUCs ? 'bg-green-400 shadow-[0_0_6px_#4ade80]' : 'bg-slate-700'}`} />
+              UCs
+              {mostrarUCs && <svg className="w-2.5 h-2.5 ml-auto opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>}
+            </button>
+
+            {mostrarUCs && ucsData && (
+              <div className={`${
+                fullScreen ? 'absolute top-full left-0 mt-2' : 'mt-1'
+              } bg-[#050f20]/98 border border-white/12 rounded-xl shadow-2xl p-2 z-50 flex flex-col gap-0.5 max-h-52 overflow-y-auto custom-scrollbar min-w-[190px]`}>
+                <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest px-2 pt-1 pb-0.5">Selecionar UC</p>
+                {Array.from(new Set(ucsData.features.map(f => f.properties.nome_uc).filter(Boolean))).sort().map((nome, i) => {
+                  const cor = getCorParaUC(nome);
+                  const ativo = ucsAtivas.includes(nome);
+                  return (
+                    <button key={i}
+                      onClick={() => ativo ? setUcsAtivas(ucsAtivas.filter(n => n !== nome)) : setUcsAtivas([...ucsAtivas, nome])}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wide transition-all text-left w-full ${
+                        ativo ? 'text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                      }`}
+                    >
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: ativo ? cor : '#334155', boxShadow: ativo ? `0 0 5px ${cor}` : 'none' }} />
+                      <span className="truncate" title={nome}>{nome}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Expandir — só no painel embutido */}
+          {!fullScreen && (
+            <>
+              <div className="w-full h-px bg-white/8 my-1" />
+              <a href="/mapa-completo" target="_blank"
+                className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600/15 hover:bg-blue-600/35 text-blue-400 hover:text-blue-200 border border-blue-500/25 hover:border-blue-400/50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-200">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                Expandir Mapa
+              </a>
+            </>
           )}
         </div>
-
-
-        {/* Separador e botão Expandir — só aparece no painel embutido */}
-        {!fullScreen && (
-          <>
-            <div className="w-full h-px bg-white/10 my-2"></div>
-            <a
-              href="/mapa-completo"
-              target="_blank"
-              className="w-full bg-[#1e4896]/90 hover:bg-blue-600 text-white rounded-lg py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2 border border-white/10"
-            >
-              Expandir Mapa
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-            </a>
-          </>
-        )}
       </div>
 
       <MapContainer scrollWheelZoom={false} boxZoom={false} center={posicaoEnquadrada} zoom={11} zoomControl={false} style={{ height: '100%', width: '100%', background: '#0a192f' }}>
@@ -252,25 +259,37 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
         <style>{`
           .leaflet-tile-container img { width: 256.5px !important; height: 256.5px !important; }
           .custom-dark-popup .leaflet-popup-content-wrapper { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
-          .custom-dark-popup .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); }
-          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+          .custom-dark-popup .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95); }
+          .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
           .mapa-tooltip {
-            background: rgba(10, 25, 47, 0.95) !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
+            background: rgba(5, 15, 32, 0.97) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
             border-radius: 8px !important;
-            color: #f1f5f9 !important;
+            color: #e2e8f0 !important;
             font-size: 11px !important;
             font-weight: 700 !important;
             text-transform: uppercase !important;
             letter-spacing: 0.08em !important;
             padding: 5px 10px !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
             white-space: nowrap !important;
           }
-          .mapa-tooltip::before { border-top-color: rgba(255,255,255,0.15) !important; }
+          .mapa-tooltip::before { border-top-color: rgba(255,255,255,0.12) !important; }
+          /* Oculta atribuição padrão do Leaflet */
+          .leaflet-control-attribution { display: none !important; }
+          /* Estiliza botões de zoom */
+          .leaflet-control-zoom { border: none !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important; }
+          .leaflet-control-zoom a { background: rgba(5,15,32,0.90) !important; border: none !important; color: #94a3b8 !important; width: 32px !important; height: 32px !important; line-height: 32px !important; font-size: 18px !important; transition: all 0.15s; }
+          .leaflet-control-zoom a:hover { background: rgba(30,72,150,0.8) !important; color: #fff !important; }
+          .leaflet-control-zoom-in { border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+          /* Estiliza LayersControl */
+          .leaflet-control-layers { background: rgba(5,15,32,0.92) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important; color: #94a3b8 !important; }
+          .leaflet-control-layers-toggle { background-color: rgba(5,15,32,0.92) !important; border-radius: 12px !important; width: 36px !important; height: 36px !important; }
+          .leaflet-control-layers label { color: #94a3b8 !important; font-size: 11px !important; font-weight: 600; }
+          .leaflet-control-layers-separator { border-color: rgba(255,255,255,0.08) !important; }
         `}</style>
 
         <LayersControl position="topright" collapsed={true}>
