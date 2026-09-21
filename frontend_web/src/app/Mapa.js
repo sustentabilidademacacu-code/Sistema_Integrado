@@ -158,12 +158,12 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
       {/* ── BARRA DE CAMADAS ─────────── */}
       <div className={`absolute z-[1000] ${
         fullScreen
-          ? 'top-4 left-1/2 -translate-x-1/2'
+          ? 'top-4 left-4'
           : 'top-3 left-3'
       }`}>
         <div className={`bg-[#050f20]/92 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.7)] ${
           fullScreen
-            ? 'flex flex-row items-center gap-1 px-3 py-2 rounded-2xl'
+            ? 'flex flex-col gap-1 p-2 rounded-2xl min-w-[190px]'
             : 'flex flex-col gap-1 p-2 rounded-2xl min-w-[190px]'
         }`}>
           {/* Label topo — só no painel lateral */}
@@ -433,8 +433,8 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
       </MapContainer>
 
-      {/* FONTE DE DADOS — canto inferior direito, acima do zoom */}
-      <div className="absolute bottom-16 right-2 z-[1000] bg-[#0a192f]/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-lg shadow-lg">
+      {/* FONTE DE DADOS — canto inferior esquerdo, longe do zoom */}
+      <div className="absolute bottom-3 left-3 z-[1000] bg-[#0a192f]/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-lg shadow-lg">
         <p className="text-[9px] text-slate-400 leading-tight">
           <strong className="text-slate-300">Fonte:</strong> CIGEO — Secretaria de Planejamento, Habitação e Geoprocessamento
         </p>
