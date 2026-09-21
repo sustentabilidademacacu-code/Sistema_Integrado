@@ -15,4 +15,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Aviso de Configuração: Chaves do Supabase não encontradas nas variáveis de ambiente. Verifique o arquivo .env.local.");
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+export const supabase = createClient(supabaseUrl || 'https://dummy.supabase.co', supabaseAnonKey || 'dummy');
