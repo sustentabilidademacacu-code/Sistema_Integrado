@@ -226,7 +226,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
               }`}
             >
               <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarUCs ? 'bg-green-400 shadow-[0_0_6px_#4ade80]' : 'bg-slate-700'}`} />
-              Unid. de Conservação
+              APAs, Refúgios e Unid. de Conservação
               {/* Seta pulsando — só no fullscreen, indica que dá para selecionar individualmente */}
               {fullScreen && mostrarUCs && (
                 <svg className="w-2.5 h-2.5 ml-auto animate-pulse opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
