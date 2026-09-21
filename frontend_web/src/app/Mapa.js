@@ -154,8 +154,13 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
   return (
     <div className={`relative w-full z-0 bg-[#0a234f] ${fullScreen ? 'h-screen' : 'h-[450px] xl:h-[600px] rounded-xl overflow-hidden shadow-inner'}`}>
-      
-      <div className="absolute top-4 left-4 z-[1000] bg-[#0a192f]/85 backdrop-blur-xl p-3 rounded-xl shadow-2xl border border-white/10 flex flex-col gap-3 max-w-[260px]">
+
+      {/* PAINEL DE CAMADAS — barra horizontal no topo em fullscreen, vertical lateral no painel */}
+      <div className={`absolute z-[1000] bg-[#0a192f]/90 backdrop-blur-xl border border-white/10 shadow-2xl ${
+        fullScreen
+          ? 'top-4 left-1/2 -translate-x-1/2 flex flex-row items-center gap-4 px-5 py-3 rounded-full'
+          : 'top-4 left-4 flex flex-col gap-3 p-3 rounded-xl max-w-[260px]'
+      }`}>
         <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-blue-400 transition-colors uppercase tracking-wider">
           <input 
             type="checkbox" 
@@ -183,11 +188,11 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           />
           Hidrografia (Rios)
         </label>
-        <div className="flex flex-col">
+        <div className={`relative ${fullScreen ? 'flex items-center' : 'flex flex-col'}`}>
           <label className="flex items-center gap-2 text-[11px] font-bold text-slate-300 cursor-pointer hover:text-green-400 transition-colors uppercase tracking-wider">
-            <input 
-              type="checkbox" 
-              checked={mostrarUCs} 
+            <input
+              type="checkbox"
+              checked={mostrarUCs}
               onChange={(e) => {
                 setMostrarUCs(e.target.checked);
                 if (e.target.checked && ucsData) {
@@ -200,36 +205,42 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
             />
             Unidades Conservação
           </label>
-          
+
           {mostrarUCs && ucsData && (
-            <div className="ml-6 mt-2 flex flex-col gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+            <div className={`${
+              fullScreen
+                ? 'absolute top-full left-0 mt-2 bg-[#0a192f]/98 border border-white/20 rounded-xl shadow-2xl p-3 z-50'
+                : 'ml-6 mt-2'
+            } flex flex-col gap-2 max-h-52 overflow-y-auto pr-2 custom-scrollbar min-w-[200px]`}>
               {Array.from(new Set(ucsData.features.map(f => f.properties.nome_uc).filter(Boolean))).sort().map((nome, i) => (
-                   <label key={i} className="flex items-center gap-2 text-[9px] text-slate-400 font-bold tracking-wide uppercase cursor-pointer hover:text-white transition-colors">
-                     <input 
-                       type="checkbox" 
-                       checked={ucsAtivas.includes(nome)} 
-                       onChange={(e) => {
-                         if (e.target.checked) setUcsAtivas([...ucsAtivas, nome]);
-                         else setUcsAtivas(ucsAtivas.filter(n => n !== nome));
-                       }}
-                       className="w-3 h-3 rounded bg-[#0f284e] border-white/20 text-green-500 focus:ring-green-500/50"
-                     />
-                     <span className="truncate w-full" title={nome}>{nome}</span>
-                   </label>
+                <label key={i} className="flex items-center gap-2 text-[9px] text-slate-400 font-bold tracking-wide uppercase cursor-pointer hover:text-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={ucsAtivas.includes(nome)}
+                    onChange={(e) => {
+                      if (e.target.checked) setUcsAtivas([...ucsAtivas, nome]);
+                      else setUcsAtivas(ucsAtivas.filter(n => n !== nome));
+                    }}
+                    className="w-3 h-3 rounded bg-[#0f284e] border-white/20 text-green-500 focus:ring-green-500/50"
+                  />
+                  <span className="truncate w-full" title={nome}>{nome}</span>
+                </label>
               ))}
             </div>
           )}
         </div>
 
+
+        {/* Separador e botão Expandir — só aparece no painel embutido */}
         {!fullScreen && (
           <>
             <div className="w-full h-px bg-white/10 my-2"></div>
-            <a 
-              href="/mapa-completo" 
+            <a
+              href="/mapa-completo"
               target="_blank"
               className="w-full bg-[#1e4896]/90 hover:bg-blue-600 text-white rounded-lg py-2.5 px-4 text-center font-black text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2 border border-white/10"
             >
-              Expandir Mapa 
+              Expandir Mapa
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
             </a>
           </>
@@ -262,7 +273,7 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
           .mapa-tooltip::before { border-top-color: rgba(255,255,255,0.15) !important; }
         `}</style>
 
-        <LayersControl position={fullScreen ? "bottomleft" : "topright"} collapsed={false}>
+        <LayersControl position="topright" collapsed={true}>
           <LayersControl.BaseLayer checked name="Satélite (Esri World Imagery)">
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -403,16 +414,11 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
       </MapContainer>
 
-      {/* LEGENDA E FONTES DE DADOS OFICIAIS (BOTTOM LEFT) */}
-      <div className="absolute bottom-2 left-2 z-[1000] bg-[#0a234f]/90 backdrop-blur-md border border-[#1e4896] p-3 rounded-lg shadow-lg flex flex-col gap-2">
-        <div className="text-[10px] text-slate-300 leading-tight flex flex-col gap-1">
-          <span>
-            <strong className="text-slate-400">FONTE DOS DADOS GEOGRÁFICOS:</strong> CIGEO - Centro Integrado de Informações Geográficas e <strong className="text-white">Geoprocessamento</strong>
-          </span>
-          <span className="text-[8px] text-slate-400">
-            Secretaria de Planejamento, <strong className="text-slate-300">Geoprocessamento</strong> e Habitação
-          </span>
-        </div>
+      {/* FONTE DE DADOS — canto inferior direito, acima do zoom */}
+      <div className="absolute bottom-16 right-2 z-[1000] bg-[#0a192f]/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-lg shadow-lg">
+        <p className="text-[9px] text-slate-400 leading-tight">
+          <strong className="text-slate-300">Fonte:</strong> CIGEO — Secretaria de Planejamento e Geoprocessamento
+        </p>
       </div>
     </div>
   );
