@@ -214,26 +214,43 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
           {/* UCs — no painel embutido: toggle simples. No fullscreen: dropdown por UC */}
           <div className="relative flex flex-col">
-            <button
-              onClick={() => {
-                const next = !mostrarUCs;
-                setMostrarUCs(next);
-                if (next && ucsData) setUcsAtivas(ucsData.features.map(f => f.properties.nome_uc));
-                else setUcsAtivas([]);
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-200 w-full ${
-                mostrarUCs ? 'bg-green-600/20 text-green-300 border border-green-500/35' : 'text-slate-500 border border-transparent hover:text-slate-300 hover:bg-white/5'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarUCs ? 'bg-green-400 shadow-[0_0_6px_#4ade80]' : 'bg-slate-700'}`} />
-              APAs, Refúgios e Unid. de Conservação
-              {/* Seta pulsando — só no fullscreen, indica que dá para selecionar individualmente */}
-              {fullScreen && mostrarUCs && (
-                <svg className="w-2.5 h-2.5 ml-auto animate-pulse opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
-                </svg>
+            <div className={`flex items-center rounded-xl transition-all duration-200 w-full border ${
+              mostrarUCs ? 'bg-green-600/20 text-green-300 border-green-500/35' : 'text-slate-500 border-transparent hover:bg-white/5'
+            }`}>
+              <button
+                onClick={() => {
+                  const next = !mostrarUCs;
+                  setMostrarUCs(next);
+                  if (next && ucsData) setUcsAtivas(ucsData.features.map(f => f.properties.nome_uc));
+                  else setUcsAtivas([]);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 flex-1 text-[10px] font-bold uppercase tracking-wider text-left hover:text-slate-300"
+              >
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${mostrarUCs ? 'bg-green-400 shadow-[0_0_6px_#4ade80]' : 'bg-slate-700'}`} />
+                APAs, Refúgios e Unid. de Conservação
+                
+                {/* Seta para baixo no fullscreen */}
+                {fullScreen && mostrarUCs && (
+                  <svg className="w-2.5 h-2.5 ml-auto animate-pulse opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Seta pulsando para expandir no painel inicial */}
+              {!fullScreen && (
+                <a 
+                  href="/mapa-completo" 
+                  target="_blank" 
+                  title="Expandir mapa para ver UCs separadamente" 
+                  className="pr-3 pl-1 flex items-center justify-center transition-transform hover:scale-110"
+                >
+                  <svg className="w-3.5 h-3.5 animate-pulse text-blue-400 hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
               )}
-            </button>
+            </div>
 
             {/* Dropdown individual — só no fullscreen */}
             {fullScreen && mostrarUCs && ucsData && (
