@@ -3,16 +3,17 @@ import { useEffect, useState, useRef } from 'react';
 import { loadState, computeIRIF } from '@/data/irif';
 
 export default function StationDashboard({ station, onBack }) {
-  const [iframeUrl, setIframeUrl] = useState('');
+  const iframeUrl = station ? `https://hexacloud.com.br/dashboard/?session=${station.session}` : '';
   const [showIframeFallback, setShowIframeFallback] = useState(false);
   const iframeLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!station) return;
-    const dashUrl = `https://hexacloud.com.br/dashboard/?session=${station.session}`;
-    setIframeUrl(dashUrl);
     iframeLoadedRef.current = false;
-    setShowIframeFallback(false);
+    
+    const resetTimer = setTimeout(() => {
+      setShowIframeFallback(false);
+    }, 0);
 
     const timer = setTimeout(() => {
       if (!iframeLoadedRef.current) {
@@ -20,7 +21,10 @@ export default function StationDashboard({ station, onBack }) {
       }
     }, 3500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(resetTimer);
+      clearTimeout(timer);
+    };
   }, [station]);
 
   if (!station) return null;

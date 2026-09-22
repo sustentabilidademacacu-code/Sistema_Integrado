@@ -93,13 +93,13 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
 
     // Carrega Logradouros (Bairros)
     fetch('/geojson/bairros.geojson')
-      .then(res => res.json())
+      .then(res => { if(res.ok) return res.json(); throw new Error('Not found'); })
       .then(data => setBairrosData(data))
       .catch(err => console.error("Erro bairros:", err));
 
     // Carrega Localidades (Polígonos da Defesa Civil / Rural)
     fetch('/geojson/localidades.geojson')
-      .then(res => res.json())
+      .then(res => { if(res.ok) return res.json(); throw new Error('Not found'); })
       .then(data => setLocalidadesData(data))
       .catch(err => console.error("Erro localidades:", err));
 

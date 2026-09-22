@@ -127,11 +127,7 @@ function PainelAdmin({ onLogout }) {
   // Guarda o perfil selecionado para cada solicitação { [id]: 'operacional'|'gabinete' }
   const [perfisEscolhidos, setPerfisEscolhidos] = useState({});
 
-  useEffect(() => {
-    fetchSolicitacoes();
-  }, []);
-
-  const fetchSolicitacoes = async () => {
+  async function fetchSolicitacoes() {
     setLoading(true);
     try {
       const { data, error } = await supabase

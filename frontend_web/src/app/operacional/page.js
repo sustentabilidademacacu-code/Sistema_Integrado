@@ -67,10 +67,16 @@ function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
         <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 px-2 flex items-center gap-2 mt-2">
           <span>📅</span> Acervo
         </p>
-        <div className="mb-8 px-1">
+        <div className="mb-8 px-1 flex flex-col gap-2">
           <Link href="/historico">
             <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between">
               Histórico de Ocorrências
+              <span>➔</span>
+            </button>
+          </Link>
+          <Link href="/defesa-civil/pluviometros">
+            <button className="w-full bg-orange-900/20 border border-orange-700/50 text-left px-4 py-3 rounded-lg text-sm font-bold text-orange-400 hover:bg-orange-800/40 hover:text-white transition-all shadow-sm flex items-center justify-between">
+              Monitoramento Chuvas (DC)
               <span>➔</span>
             </button>
           </Link>
@@ -153,11 +159,11 @@ export default function Operacional() {
   const [secCor, setSecCor] = useState('');
 
   useEffect(() => {
-    setSecNome(localStorage.getItem('smiic_secretaria_nome') || 'Secretaria Operacional');
-    setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#1e293b');
-    const id = localStorage.getItem('smiic_secretaria_id') || '';
+    const id = typeof window !== 'undefined' ? localStorage.getItem('smiic_secretaria_id') || '' : '';
 
     const fetchData = async () => {
+      setSecNome(localStorage.getItem('smiic_secretaria_nome') || 'Secretaria Operacional');
+      setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#1e293b');
       try {
         const [resOco, resEst, resSec, resIrif] = await Promise.all([
           supabase.from('ocorrencias').select('*'),
