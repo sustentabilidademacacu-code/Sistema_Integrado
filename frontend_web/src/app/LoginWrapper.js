@@ -120,14 +120,16 @@ export default function LoginWrapper({ children }) {
     setErro('');
     setIsLoggingIn(true);
 
+    const formattedEmail = email.includes('@') ? email : `${email.trim().toLowerCase()}@sistema.local`;
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: formattedEmail,
         password: senha
       });
 
       if (error) {
-        setErro('Credenciais inválidas. Verifique seu e-mail e senha.');
+        setErro('Credenciais inválidas. Verifique seu usuário e senha.');
         setIsLoggingIn(false);
         return;
       }
@@ -136,7 +138,7 @@ export default function LoginWrapper({ children }) {
       const { data: perfilData, error: perfilError } = await supabase
         .from('solicitacao_acesso')
         .select('*')
-        .eq('email_institucional', email)
+        .eq('email_institucional', formattedEmail)
         .single();
 
       if (perfilError || !perfilData) {
@@ -198,10 +200,12 @@ export default function LoginWrapper({ children }) {
 
     setIsSubmitting(true);
     
+    const formattedReqEmail = reqEmail.includes('@') ? reqEmail : `${reqEmail.trim().toLowerCase()}@sistema.local`;
+
     try {
       // 1. Criar o usuário no Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: reqEmail,
+        email: formattedReqEmail,
         password: reqSenha
       });
 
@@ -209,7 +213,7 @@ export default function LoginWrapper({ children }) {
         if (authError.message?.includes('rate limit')) {
           alert("Muitas tentativas de cadastro. Aguarde alguns minutos e tente novamente.");
         } else if (authError.message?.includes('already registered')) {
-          alert("Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.");
+          alert("Este usuário já está cadastrado. Tente fazer login ou use outro nome de usuário.");
         } else {
           alert("Erro ao criar conta: " + authError.message);
         }
@@ -220,7 +224,7 @@ export default function LoginWrapper({ children }) {
       // 2. Inserir a solicitação de acesso com status 'analise'
       const { error: insertError } = await supabase.from('solicitacao_acesso').insert([{
         nome_completo: reqNome,
-        email_institucional: reqEmail,
+        email_institucional: formattedReqEmail,
         secretaria_id: reqSecretaria || null,
         status: 'analise',
         perfil: 'operacional' // padrão, admin pode alterar na aprovação
@@ -289,7 +293,7 @@ export default function LoginWrapper({ children }) {
                   {erro}
                   {erroEhBloqueio && (
                     <p className="mt-2 text-orange-500 font-normal">
-                      Quando liberado, use o mesmo e-mail e senha para entrar.
+                      Quando liberado, use o mesmo usuário e senha para entrar.
                     </p>
                   )}
                 </div>
@@ -297,12 +301,12 @@ export default function LoginWrapper({ children }) {
 
               <form onSubmit={handleLogin} className="w-full space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">E-mail Institucional</label>
+                  <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Nome de Usuário</label>
                   <input 
-                    type="email" 
+                    type="text" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="servidor@cachoeiras.rj.gov.br"
+                    placeholder="joao.silva"
                     className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     required
                   />
@@ -365,7 +369,7 @@ export default function LoginWrapper({ children }) {
                   <p className="font-bold">Solicitação enviada com sucesso!</p>
                   <p className="text-xs text-emerald-600 font-normal mt-1">
                     Seu cadastro está <strong>EM ANÁLISE</strong> pelo Gabinete do Prefeito.<br/>
-                    Quando aprovado, você receberá acesso e poderá entrar com seu e-mail e senha.
+                    Quando aprovado, você receberá acesso e poderá entrar com seu usuário e senha.
                   </p>
                   <button 
                     onClick={() => {
@@ -395,12 +399,12 @@ export default function LoginWrapper({ children }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">E-mail Institucional *</label>
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Nome de Usuário *</label>
                     <input 
-                      type="email" 
+                      type="text" 
                       value={reqEmail}
                       onChange={(e) => setReqEmail(e.target.value)}
-                      placeholder="servidor@cachoeiras.rj.gov.br"
+                      placeholder="joao.silva"
                       className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                       required
                     />
