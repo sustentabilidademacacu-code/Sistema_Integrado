@@ -31,13 +31,13 @@ Para que o sistema funcione corretamente, as seguintes variáveis de ambiente pr
 ---
 
 ## 2. Acesso de Administrador (Portal)
-As credenciais de administrador são gerenciadas pelo **Supabase** (na aba Authentication).
+As credenciais de administrador (Painel de Gestão de Acessos) são exclusivas do Gabinete.
 
 **Administrador Principal:**
-- **Email/Usuário:** `[PREENCHA AQUI SEU EMAIL DE ADMIN]` *(Exemplo: admin@sustentabilidademacacu.rj.gov.br)*
-- **Senha:** `[PREENCHA AQUI SUA SENHA]`
+- **Nome de Usuário:** `Sustentabilidade_SIMIIC`
+- **Senha:** `SustentavelCLima2026@`
 
-*Nota para o futuro administrador: Se esquecer a senha, é possível redefini-la diretamente no painel do Supabase da conta (aba Authentication > Users > Update Password).*
+*Nota: Esse é o usuário "Mestre" que aprova o cadastro dos outros servidores.*
 
 ---
 
@@ -51,7 +51,7 @@ As credenciais de administrador são gerenciadas pelo **Supabase** (na aba Authe
 
 ---
 
-## 4. Como Rodar o Projeto
+## 4. Como Rodar e Subir o Projeto (Vercel)
 
 **No seu Computador (Desenvolvimento):**
 1. Abra o terminal na pasta `frontend_web`.
@@ -61,5 +61,5 @@ As credenciais de administrador são gerenciadas pelo **Supabase** (na aba Authe
 
 **Para subir atualizações (Vercel):**
 1. No seu computador, faça o commit: `git add .`, depois `git commit -m "sua mensagem"` e `git push`.
-2. O código vai para o GitHub da Secretaria.
-3. A Vercel (que está conectada ao GitHub da Secretaria) vai ler a atualização automaticamente e colocar o site no ar. Não precisa fazer mais nada!
+2. **Atenção:** Sempre que fizer um push para o repositório, certifique-se de estar usando a **conta do GitHub principal** autorizada, senão a Vercel não aceitará a atualização.
+3. A Vercel vai ler a atualização automaticamente e colocar o site no ar. Não precisa fazer mais nada!
