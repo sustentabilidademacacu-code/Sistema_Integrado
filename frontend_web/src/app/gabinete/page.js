@@ -88,6 +88,18 @@ function Sidebar({ estacoes, secretarias, onSelectEstacao }) {
           <span>📊</span> Visão Geral
         </p>
         <div className="mb-8 px-1">
+          <Link href="/defesa-civil/dashboards">
+            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between group mb-2">
+              Panorama Exaclima
+              <span className="opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
+            </button>
+          </Link>
+          <Link href="/operacional">
+            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between group mb-2">
+              Painel Operacional
+              <span className="opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
+            </button>
+          </Link>
           <Link href="/historico">
             <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between group">
               Relatório Completo

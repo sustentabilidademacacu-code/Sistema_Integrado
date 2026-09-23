@@ -23,7 +23,7 @@ function Navbar({ secCor }) {
             Módulo de Execução <span className="w-1 h-1 bg-neutral-300 rounded-full"></span> Plataforma SMIIC
           </span>
           <h1 className="text-xl md:text-2xl font-black uppercase leading-tight text-[#022888]">
-            PAINEL OPERACIONAL — DEFESA CIVIL
+            PAINEL OPERACIONAL — PANORAMA EXACLIMA
           </h1>
         </div>
         

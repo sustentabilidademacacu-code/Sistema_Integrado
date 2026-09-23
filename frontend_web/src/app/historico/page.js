@@ -17,7 +17,7 @@ export default function HistoricoPage() {
           .from('ocorrencias')
           .select('*')
           .eq('status', 'Concluido')
-          .order('criado_em', { ascending: false });
+          .order('data_registro', { ascending: false });
           
         if (error) {
           console.error(error);
@@ -124,7 +124,7 @@ export default function HistoricoPage() {
 
                     <div className="text-right">
                       <p className="text-[10px] text-slate-600 font-medium">
-                        Registrado em: {oco.criado_em ? new Date(oco.criado_em).toLocaleDateString('pt-BR') : '—'}
+                        Registrado em: {oco.data_registro ? new Date(oco.data_registro).toLocaleDateString('pt-BR') : '—'}
                       </p>
                     </div>
                   </div>

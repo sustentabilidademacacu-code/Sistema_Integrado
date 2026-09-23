@@ -68,18 +68,19 @@ function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
           <span>📅</span> Acervo
         </p>
         <div className="mb-8 px-1 flex flex-col gap-2">
+          <Link href="/defesa-civil/dashboards">
+            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between mb-2">
+              Panorama Exaclima
+              <span>➔</span>
+            </button>
+          </Link>
           <Link href="/historico">
             <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between">
               Histórico de Ocorrências
               <span>➔</span>
             </button>
           </Link>
-          <Link href="/defesa-civil/pluviometros">
-            <button className="w-full bg-orange-900/20 border border-orange-700/50 text-left px-4 py-3 rounded-lg text-sm font-bold text-orange-400 hover:bg-orange-800/40 hover:text-white transition-all shadow-sm flex items-center justify-between">
-              Monitoramento Chuvas (DC)
-              <span>➔</span>
-            </button>
-          </Link>
+
         </div>
 
         <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 px-2 flex items-center gap-2">

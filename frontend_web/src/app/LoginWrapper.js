@@ -59,6 +59,10 @@ export default function LoginWrapper({ children }) {
   const [reqSecretaria, setReqSecretaria] = useState('');
   const [reqSenha, setReqSenha] = useState('');
   const [reqSenhaConfirma, setReqSenhaConfirma] = useState('');
+  const [reqEmailContato, setReqEmailContato] = useState('');
+  const [reqIdade, setReqIdade] = useState('');
+  const [reqSexo, setReqSexo] = useState('');
+  
   const [showReqSenha, setShowReqSenha] = useState(false);
   const [showReqSenhaConfirma, setShowReqSenhaConfirma] = useState(false);
   const [reqSucesso, setReqSucesso] = useState(false);
@@ -193,8 +197,15 @@ export default function LoginWrapper({ children }) {
       return;
     }
 
-    if (reqSenha.length < 6) {
-      alert("A senha deve ter pelo menos 6 caracteres.");
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&.])[A-Za-z\d@$!%*#?&.]{6,}$/;
+    if (!passwordRegex.test(reqSenha)) {
+      alert("A senha deve conter no mínimo 6 caracteres, combinando letras, números e pelo menos um símbolo (ex: @, #, $, !).");
+      return;
+    }
+
+    const usernameRegex = /^[a-z0-9]+$/;
+    if (!usernameRegex.test(reqEmail)) {
+      alert("O nome de usuário deve conter apenas letras minúsculas e números, sem espaços ou caracteres especiais (ex: joao123).");
       return;
     }
 
@@ -225,6 +236,9 @@ export default function LoginWrapper({ children }) {
       const { error: insertError } = await supabase.from('solicitacao_acesso').insert([{
         nome_completo: reqNome,
         email_institucional: formattedReqEmail,
+        email_contato: reqEmailContato,
+        idade: reqIdade ? parseInt(reqIdade) : null,
+        sexo: reqSexo,
         secretaria_id: reqSecretaria || null,
         status: 'analise',
         perfil: 'operacional' // padrão, admin pode alterar na aprovação
@@ -377,6 +391,9 @@ export default function LoginWrapper({ children }) {
                       setReqSucesso(false);
                       setReqNome('');
                       setReqEmail('');
+                      setReqEmailContato('');
+                      setReqIdade('');
+                      setReqSexo('');
                       setReqSenha('');
                       setReqSenhaConfirma('');
                     }}
@@ -399,15 +416,52 @@ export default function LoginWrapper({ children }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Nome de Usuário *</label>
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Nome de Usuário (Login) *</label>
                     <input 
                       type="text" 
                       value={reqEmail}
-                      onChange={(e) => setReqEmail(e.target.value)}
-                      placeholder="joao.silva"
+                      onChange={(e) => setReqEmail(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                      placeholder="joao123"
                       className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                       required
                     />
+                    <p className="text-[9px] text-slate-400 mt-0.5">Apenas letras minúsculas e números.</p>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">E-mail para Contato *</label>
+                    <input 
+                      type="email" 
+                      value={reqEmailContato}
+                      onChange={(e) => setReqEmailContato(e.target.value)}
+                      placeholder="seu.email@exemplo.com"
+                      className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Idade</label>
+                      <input 
+                        type="number" 
+                        value={reqIdade}
+                        onChange={(e) => setReqIdade(e.target.value)}
+                        placeholder="Ex: 35"
+                        className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Sexo</label>
+                      <select 
+                        value={reqSexo}
+                        onChange={(e) => setReqSexo(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                        <option value="Outro">Outro</option>
+                      </select>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Secretaria / Órgão *</label>

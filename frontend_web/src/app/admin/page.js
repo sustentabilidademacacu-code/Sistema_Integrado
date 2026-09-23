@@ -49,7 +49,7 @@ function AdminLoginScreen({ onLogin }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      onLogin();
+      onLogin(pass);
     } else {
       setErro('Credenciais inválidas. Verifique usuário e senha.');
     }
@@ -120,12 +120,48 @@ function AdminLoginScreen({ onLogin }) {
 }
 
 // ─── PAINEL DE APROVAÇÃO ────────────────────────────────────────────────────
-function PainelAdmin({ onLogout }) {
+function PainelAdmin({ onLogout, adminPass }) {
+
+  const [novoNome, setNovoNome] = useState('');
+  const [novoEmail, setNovoEmail] = useState('');
+  const [novaSenha, setNovaSenha] = useState('');
+  const [novoSec, setNovoSec] = useState('');
+  const [novoPerfil, setNovoPerfil] = useState('operacional');
+
+  const handleCriacaoManual = async (e) => {
+    e.preventDefault();
+    if (!novoSec) return alert('Selecione uma secretaria');
+    const res = await fetch("/api/admin/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: null,
+        nome_completo: novoNome,
+        email_institucional: novoEmail,
+        senha_provisoria: novaSenha,
+        secretaria_id: novoSec,
+        perfil: novoPerfil,
+        admin_password: adminPass
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("Conta criada diretamente com sucesso!");
+      setNovoNome(""); setNovoEmail(""); setNovaSenha("");
+    } else {
+      alert("Erro ao criar conta: " + data.error);
+    }
+  };
+
   const [solicitacoes, setSolicitacoes] = useState([]);
+  const [historico, setHistorico] = useState([]);
   const [secretariasList, setSecretariasList] = useState(SECRETARIAS_FALLBACK);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pendentes'); // 'pendentes' ou 'historico'
+  
   // Guarda o perfil selecionado para cada solicitação { [id]: 'operacional'|'gabinete' }
   const [perfisEscolhidos, setPerfisEscolhidos] = useState({});
+  const [justificativas, setJustificativas] = useState({});
 
   async function fetchSolicitacoes() {
     setLoading(true);
@@ -133,16 +169,25 @@ function PainelAdmin({ onLogout }) {
       const { data, error } = await supabase
         .from('solicitacao_acesso')
         .select('*')
-        .eq('status', 'analise')
         .order('data_solicitacao', { ascending: false });
 
       if (error) throw error;
-      setSolicitacoes(data || []);
+      
+      const pendentes = data?.filter(s => s.status === 'analise') || [];
+      const hist = data?.filter(s => s.status === 'liberado' || s.status === 'rejeitado') || [];
+
+      setSolicitacoes(pendentes);
+      setHistorico(hist);
 
       // Inicializa perfil padrão para cada solicitação
       const perfisIniciais = {};
-      (data || []).forEach(s => { perfisIniciais[s.id] = s.perfil || 'operacional'; });
+      const justIniciais = {};
+      pendentes.forEach(s => { 
+        perfisIniciais[s.id] = s.perfil || 'operacional'; 
+        justIniciais[s.id] = '';
+      });
       setPerfisEscolhidos(perfisIniciais);
+      setJustificativas(justIniciais);
 
       // Busca secretarias do banco
       const { data: secData } = await supabase.from('secretarias').select('*');
@@ -152,26 +197,89 @@ function PainelAdmin({ onLogout }) {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    fetchSolicitacoes();
+  }, []);
 
   const handleUpdateStatus = async (id, novoStatus) => {
     const perfilEscolhido = perfisEscolhidos[id] || 'operacional';
+    const justificativa = justificativas[id] || '';
+    const sol = solicitacoes.find(s => s.id === id);
+    
+    if (!sol) return;
+
     try {
-      const updateData = { status: novoStatus };
       if (novoStatus === 'liberado') {
-        updateData.perfil = perfilEscolhido;
+        const res = await fetch("/api/admin/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: sol.id,
+            nome_completo: sol.nome_completo,
+            email_institucional: sol.email_institucional,
+            senha_provisoria: sol.senha_provisoria, // se houver, o endpoint deve lidar
+            secretaria_id: sol.secretaria_id,
+            perfil: perfilEscolhido,
+            justificativa_admin: justificativa,
+            admin_password: adminPass
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("Usuário aprovado e conta liberada!");
+          fetchSolicitacoes();
+        } else {
+          alert("Erro: " + data.error);
+        }
+      } else {
+        const res = await fetch("/api/admin/reject", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            id, 
+            justificativa_admin: justificativa,
+            admin_password: adminPass 
+          })
+        });
+        if (res.ok) {
+          alert("Solicitação rejeitada.");
+          fetchSolicitacoes();
+        } else {
+          const data = await res.json();
+          alert("Erro ao rejeitar: " + data.error);
+        }
       }
-
-      const { error } = await supabase
-        .from('solicitacao_acesso')
-        .update(updateData)
-        .eq('id', id);
-
-      if (error) throw error;
-      setSolicitacoes(prev => prev.filter(s => s.id !== id));
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar solicitação. Tente novamente.');
+      alert('Erro ao processar. Verifique o console.');
+    }
+  };
+
+  const handleResetPassword = async (userEmail) => {
+    const newPass = prompt(`Digite a nova senha para o usuário ${userEmail}:\n(Letras, números, símbolo e mín 6 caracteres)`);
+    if (!newPass) return;
+    
+    try {
+      const res = await fetch("/api/admin/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail,
+          new_password: newPass,
+          admin_password: adminPass
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Senha redefinida com sucesso!");
+      } else {
+        alert("Erro ao redefinir senha: " + data.error);
+      }
+    } catch(e) {
+      alert("Erro na conexão");
     }
   };
 
@@ -205,75 +313,180 @@ function PainelAdmin({ onLogout }) {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto p-8">
+      <div className="bg-[#133570] px-8 py-0 flex gap-4 border-b border-[#1e4896]">
+        <button 
+          onClick={() => setActiveTab('pendentes')}
+          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all ${activeTab === 'pendentes' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          Pendentes ({solicitacoes.length})
+        </button>
+        <button 
+          onClick={() => setActiveTab('historico')}
+          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all ${activeTab === 'historico' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          Histórico e Relatórios ({historico.length})
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
         {loading ? (
           <div className="text-center py-20 text-slate-500 font-bold">Carregando solicitações...</div>
-        ) : solicitacoes.length === 0 ? (
-          <div className="bg-[#0a234f] border border-dashed border-[#1e4896] rounded-2xl p-16 text-center">
-            <span className="text-5xl block mb-4">🎉</span>
-            <h3 className="text-white text-xl font-bold mb-2">Nenhuma solicitação pendente</h3>
-            <p className="text-slate-500">Todos os acessos já foram analisados.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-slate-400 text-sm mb-6">
-              Analise as solicitações abaixo. Escolha o nível de acesso e aprove ou rejeite.
-            </p>
-            {solicitacoes.map(sol => (
-              <div key={sol.id} className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                
-                {/* Dados do usuário */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <div className="w-8 h-8 rounded-full bg-[#133570] border border-[#1e4896] flex items-center justify-center text-sm font-black text-slate-300">
-                      {sol.nome_completo?.charAt(0)?.toUpperCase() || '?'}
+        ) : activeTab === 'pendentes' ? (
+          solicitacoes.length === 0 ? (
+            <div className="bg-[#0a234f] border border-dashed border-[#1e4896] rounded-2xl p-16 text-center">
+              <span className="text-5xl block mb-4">🎉</span>
+              <h3 className="text-white text-xl font-bold mb-2">Nenhuma solicitação pendente</h3>
+              <p className="text-slate-500">Todos os acessos já foram analisados.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm mb-6">
+                Analise as solicitações abaixo. Escolha o nível de acesso e aprove ou rejeite.
+              </p>
+              {solicitacoes.map(sol => (
+                <div key={sol.id} className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 flex flex-col gap-4">
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-[#133570] border border-[#1e4896] flex items-center justify-center text-sm font-black text-slate-300">
+                          {sol.nome_completo?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <span className="text-white font-bold truncate">{sol.nome_completo}</span>
+                        <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded">{sol.idade ? `${sol.idade} anos` : 'Idade N/A'} | {sol.sexo || 'Sexo N/A'}</span>
+                      </div>
+                      <p className="text-slate-400 text-sm ml-11">Login: {sol.email_institucional}</p>
+                      <p className="text-slate-400 text-sm ml-11">Contato: {sol.email_contato || 'Não informado'}</p>
+                      <p className="text-emerald-500 text-xs font-bold ml-11 mt-1">
+                        📍 {nomeSecretaria(sol.secretaria_id)}
+                      </p>
                     </div>
-                    <span className="text-white font-bold truncate">{sol.nome_completo}</span>
-                  </div>
-                  <p className="text-slate-400 text-sm ml-11">{sol.email_institucional}</p>
-                  <p className="text-emerald-500 text-xs font-bold ml-11 mt-1">
-                    📍 {nomeSecretaria(sol.secretaria_id)}
-                  </p>
-                  <p className="text-slate-600 text-[10px] ml-11 mt-1">
-                    Solicitado em: {sol.data_solicitacao ? new Date(sol.data_solicitacao).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
-                  </p>
-                </div>
 
-                {/* Ações */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-                  {/* Dropdown de perfil */}
-                  <div className="flex flex-col">
-                    <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold mb-1">Nível de Acesso</label>
-                    <select
-                      value={perfisEscolhidos[sol.id] || 'operacional'}
-                      onChange={(e) => setPerfisEscolhidos(prev => ({ ...prev, [sol.id]: e.target.value }))}
-                      className="bg-[#133570] border border-[#1e4896] text-slate-200 rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="operacional">Operacional (Secretaria)</option>
-                      <option value="gabinete">Gabinete (War Room)</option>
-                    </select>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <div className="flex flex-col">
+                        <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold mb-1">Nível de Acesso</label>
+                        <select
+                          value={perfisEscolhidos[sol.id] || 'operacional'}
+                          onChange={(e) => setPerfisEscolhidos(prev => ({ ...prev, [sol.id]: e.target.value }))}
+                          className="bg-[#133570] border border-[#1e4896] text-slate-200 rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="operacional">Operacional (Secretaria)</option>
+                          <option value="gabinete">Gabinete (War Room)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Botões */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleUpdateStatus(sol.id, 'liberado')}
-                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-emerald-900/30 active:scale-95"
-                    >
-                      ✓ Aprovar
-                    </button>
+                  <div className="bg-[#03132e] p-3 rounded-lg border border-[#1e4896] flex flex-col">
+                    <label className="text-[9px] text-slate-500 uppercase tracking-wider font-bold mb-1">Justificativa / Parecer (Opcional)</label>
+                    <textarea 
+                      value={justificativas[sol.id] || ''}
+                      onChange={(e) => setJustificativas(prev => ({ ...prev, [sol.id]: e.target.value }))}
+                      placeholder="Motivo da aprovação ou rejeição..."
+                      className="bg-transparent text-sm text-slate-300 w-full focus:outline-none resize-none h-12"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 justify-end mt-2">
                     <button
                       onClick={() => handleUpdateStatus(sol.id, 'rejeitado')}
                       className="px-5 py-2.5 bg-red-900/40 hover:bg-red-900/70 text-red-400 hover:text-red-300 border border-red-900/50 rounded-lg font-bold text-sm transition-all active:scale-95"
                     >
                       ✗ Rejeitar
                     </button>
+                    <button
+                      onClick={() => handleUpdateStatus(sol.id, 'liberado')}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-emerald-900/30 active:scale-95"
+                    >
+                      ✓ Aprovar
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
+        ) : (
+          historico.length === 0 ? (
+            <div className="bg-[#0a234f] border border-dashed border-[#1e4896] rounded-2xl p-16 text-center">
+              <span className="text-5xl block mb-4">🗂️</span>
+              <h3 className="text-white text-xl font-bold mb-2">Nenhum histórico</h3>
+              <p className="text-slate-500">Histórico de acessos aprovados/rejeitados aparecerá aqui.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm mb-6">Lista de usuários que já passaram por análise do Gabinete.</p>
+              {historico.map(sol => (
+                <div key={sol.id} className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold">{sol.nome_completo}</span>
+                        <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded ${sol.status === 'liberado' ? 'bg-emerald-900/50 text-emerald-400 border border-emerald-900' : 'bg-red-900/50 text-red-400 border border-red-900'}`}>
+                          {sol.status}
+                        </span>
+                      </div>
+                      <p className="text-slate-400 text-xs mt-1">Login: {sol.email_institucional} | Contato: {sol.email_contato}</p>
+                      <p className="text-slate-500 text-[10px] mt-1">Perfil: {sol.perfil?.toUpperCase()} — {nomeSecretaria(sol.secretaria_id)}</p>
+                    </div>
+                    {sol.status === 'liberado' && (
+                      <button 
+                        onClick={() => handleResetPassword(sol.email_institucional)}
+                        className="bg-orange-900/40 hover:bg-orange-900/80 text-orange-400 border border-orange-900 px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all"
+                      >
+                        Redefinir Senha
+                      </button>
+                    )}
+                  </div>
+                  {sol.justificativa_admin && (
+                    <div className="mt-2 bg-[#03132e] border border-[#133570] p-3 rounded-lg">
+                      <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Parecer / Relatório</p>
+                      <p className="text-xs text-slate-300 italic">"{sol.justificativa_admin}"</p>
+                    </div>
+                  )}
+                  <p className="text-[9px] text-slate-600 mt-2 text-right font-medium">Analisado em: {sol.data_analise ? new Date(sol.data_analise).toLocaleString('pt-BR') : '—'}</p>
+                </div>
+              ))}
+            </div>
+          )
         )}
+        </div>
+
+        {/* Lado Direito: Criação Direta */}
+        <div className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 h-fit">
+          <h2 className="text-lg font-bold text-white mb-4">Criar Usuário Diretamente</h2>
+          <form onSubmit={handleCriacaoManual} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
+              <input required type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">E-mail</label>
+              <input required type="email" value={novoEmail} onChange={e => setNovoEmail(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
+              <input required type="text" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Perfil</label>
+              <select required value={novoPerfil} onChange={e => setNovoPerfil(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
+                <option value="operacional">Operacional (Secretaria)</option>
+                <option value="gabinete">Gabinete (War Room)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Secretaria</label>
+              <select required value={novoSec} onChange={e => setNovoSec(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
+                <option value="">Selecione...</option>
+                {secretariasList.map(sec => <option key={sec.id} value={sec.id}>{sec.nome}</option>)}
+              </select>
+            </div>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-colors mt-2">
+              Criar e Liberar Acesso
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -282,10 +495,11 @@ function PainelAdmin({ onLogout }) {
 // ─── EXPORT PRINCIPAL ────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [adminLogado, setAdminLogado] = useState(false);
+  const [adminPass, setAdminPass] = useState('');
 
   if (!adminLogado) {
-    return <AdminLoginScreen onLogin={() => setAdminLogado(true)} />;
+    return <AdminLoginScreen onLogin={(pass) => { setAdminLogado(true); setAdminPass(pass); }} />;
   }
 
-  return <PainelAdmin onLogout={() => setAdminLogado(false)} />;
+  return <PainelAdmin onLogout={() => setAdminLogado(false)} adminPass={adminPass} />;
 }
