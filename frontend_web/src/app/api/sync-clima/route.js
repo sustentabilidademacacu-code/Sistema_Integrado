@@ -29,6 +29,20 @@ function scoreDiasSemChuva(dias) {
   return 100;
 }
 
+function formatBRT(dateOrEpochMs) {
+  if (!dateOrEpochMs) return "";
+  const date = new Date(dateOrEpochMs);
+  return date.toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
 async function fetchStationData(session) {
   const trintaDiasAtras = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
   const url = `https://hexacloud.com.br/json_api/getAllData.php?session=${session}&since=${trintaDiasAtras}`;
@@ -69,13 +83,6 @@ function parseReadings(raw) {
         ultimaChuvaEpochMs = leitura.timestamp;
       }
     }
-  }
-
-  if (leituraSensorEpochMs) {
-    leituraSensorEpochMs += 3 * 3600 * 1000;
-  }
-  if (ultimaChuvaEpochMs) {
-    ultimaChuvaEpochMs += 3 * 3600 * 1000;
   }
 
   return { temperatura, umidade, vento, ultimaChuvaEpochMs, leituraSensorEpochMs };
@@ -124,11 +131,6 @@ export async function GET(request) {
         ? Math.floor((agoraMs - ultimaChuvaEpochMs) / 86400000)
         : 30;
 
-      const atualizadoEmIso = new Date().toISOString();
-      const leituraSensorDataIso = leituraSensorEpochMs
-        ? new Date(leituraSensorEpochMs).toISOString()
-        : null;
-
       // Monta a linha para o Google Sheets (na mesma ordem do header)
       const row = [
         st.session,
@@ -140,13 +142,13 @@ export async function GET(request) {
         vento !== null ? vento : "",
         vento !== null ? scoreVento(vento) : "",
         ultimaChuvaEpochMs ? Math.floor(ultimaChuvaEpochMs / 1000) : "",
-        ultimaChuvaEpochMs ? new Date(ultimaChuvaEpochMs).toISOString() : "",
+        formatBRT(ultimaChuvaEpochMs),
         leituraSensorEpochMs ? Math.floor(leituraSensorEpochMs / 1000) : "",
-        leituraSensorDataIso || "",
+        formatBRT(leituraSensorEpochMs),
         diasSemChuva,
         scoreDiasSemChuva(diasSemChuva),
         "api",
-        atualizadoEmIso
+        formatBRT(agoraMs)
       ];
 
       return { session: st.session, ok: true, row };
