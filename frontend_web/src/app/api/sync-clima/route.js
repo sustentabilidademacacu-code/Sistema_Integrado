@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { google } from 'googleapis';
 import { STATIONS } from '@/data/stations';
 
 function scoreTemp(tempC) {
@@ -81,17 +81,42 @@ function parseReadings(raw) {
   return { temperatura, umidade, vento, ultimaChuvaEpochMs, leituraSensorEpochMs };
 }
 
+async function updateGoogleSheets(rows) {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    },
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+
+  const sheets = google.sheets({ version: 'v4', auth });
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+  // Cabeçalhos (A1:P1)
+  const header = [
+    "session", "nome_escola", "temperatura_c", "temp_score", "umidade_pct", "ur_score",
+    "vento_kmh", "vento_score", "ultima_chuva_epoch", "ultima_chuva_data",
+    "leitura_sensor_epoch", "leitura_sensor_data", "dias_sem_chuva", "dias_score",
+    "fonte", "atualizado_em"
+  ];
+
+  // Matriz de dados para enviar ao Sheets
+  const values = [header, ...rows];
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: 'leituras_clima_irif!A1:P' + values.length,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values },
+  });
+}
+
 export async function GET(request) {
-  // Dispara todas as requisições em paralelo para não travar a Vercel
+  // Dispara todas as requisições em paralelo
   const promessas = STATIONS.map(async (st) => {
     try {
       const raw = await fetchStationData(st.session);
-
-      await supabase.from("leituras_clima_historico_irif").insert({
-        session: st.session,
-        payload: raw,
-      });
-
       const { temperatura, umidade, vento, ultimaChuvaEpochMs, leituraSensorEpochMs } = parseReadings(raw);
 
       const agoraMs = Date.now();
@@ -104,45 +129,45 @@ export async function GET(request) {
         ? new Date(leituraSensorEpochMs).toISOString()
         : null;
 
-      await supabase.from("log_execucoes").insert({
-        session: st.session,
-        nome_escola: st.nome,
-        atualizado_em: atualizadoEmIso,
-        leitura_sensor_data: leituraSensorDataIso,
-        temperatura_c: temperatura,
-        umidade_pct: umidade,
-        vento_kmh: vento,
-        dias_sem_chuva: diasSemChuva,
-      });
+      // Monta a linha para o Google Sheets (na mesma ordem do header)
+      const row = [
+        st.session,
+        st.nome,
+        temperatura !== null ? temperatura : "",
+        temperatura !== null ? scoreTemp(temperatura) : "",
+        umidade !== null ? umidade : "",
+        umidade !== null ? scoreUmidade(umidade) : "",
+        vento !== null ? vento : "",
+        vento !== null ? scoreVento(vento) : "",
+        ultimaChuvaEpochMs ? Math.floor(ultimaChuvaEpochMs / 1000) : "",
+        ultimaChuvaEpochMs ? new Date(ultimaChuvaEpochMs).toISOString() : "",
+        leituraSensorEpochMs ? Math.floor(leituraSensorEpochMs / 1000) : "",
+        leituraSensorDataIso || "",
+        diasSemChuva,
+        scoreDiasSemChuva(diasSemChuva),
+        "api",
+        atualizadoEmIso
+      ];
 
-      const { error: upsertError } = await supabase.from("leituras_clima_irif").upsert({
-        session: st.session,
-        nome_escola: st.nome,
-        temperatura_c: temperatura,
-        temp_score: temperatura !== null ? scoreTemp(temperatura) : null,
-        umidade_pct: umidade,
-        ur_score: umidade !== null ? scoreUmidade(umidade) : null,
-        vento_kmh: vento,
-        vento_score: vento !== null ? scoreVento(vento) : null,
-        ultima_chuva_epoch: ultimaChuvaEpochMs ? Math.floor(ultimaChuvaEpochMs / 1000) : null,
-        ultima_chuva_data: ultimaChuvaEpochMs ? new Date(ultimaChuvaEpochMs).toISOString() : null,
-        leitura_sensor_epoch: leituraSensorEpochMs ? Math.floor(leituraSensorEpochMs / 1000) : null,
-        leitura_sensor_data: leituraSensorDataIso,
-        dias_sem_chuva: diasSemChuva,
-        dias_score: scoreDiasSemChuva(diasSemChuva),
-        fonte: "api",
-        atualizado_em: atualizadoEmIso,
-      });
-
-      if (upsertError) throw upsertError;
-
-      return { session: st.session, ok: true };
+      return { session: st.session, ok: true, row };
     } catch (err) {
+      console.error(`Erro ao processar ${st.session}:`, err);
       return { session: st.session, ok: false, erro: String(err) };
     }
   });
 
   const resultados = await Promise.all(promessas);
+  
+  // Filtra as linhas com sucesso
+  const rowsParaSalvar = resultados.filter(r => r.ok && r.row).map(r => r.row);
 
-  return NextResponse.json({ success: true, resultados });
+  try {
+    if (rowsParaSalvar.length > 0) {
+      await updateGoogleSheets(rowsParaSalvar);
+    }
+    return NextResponse.json({ success: true, message: `Atualizado ${rowsParaSalvar.length} estações no Sheets`, resultados });
+  } catch (error) {
+    console.error("Erro ao escrever no Google Sheets:", error);
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+  }
 }

@@ -165,12 +165,13 @@ export default function Operacional() {
       setSecNome(localStorage.getItem('smiic_secretaria_nome') || 'Secretaria Operacional');
       setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#1e293b');
       try {
-        const [resOco, resEst, resSec, resIrif] = await Promise.all([
+        const [resOco, resSec, resIrifRaw] = await Promise.all([
           supabase.from('ocorrencias').select('*'),
-          supabase.from('mapa_atual').select('*'),
           supabase.from('secretarias').select('*'),
-          supabase.from('leituras_clima_irif').select('*')
+          fetch('/api/get-clima').then(r => r.json())
         ]);
+        const resEst = { data: [] };
+        const resIrif = { data: resIrifRaw.data || [] };
 
         const secList = resSec.data || [];
 

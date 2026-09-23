@@ -13,12 +13,13 @@ export default function MapaCompleto() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [resOco, resEst, resSec, resIrif] = await Promise.all([
+        const [resOco, resSec, resIrifRaw] = await Promise.all([
           supabase.from('ocorrencias').select('*'),
-          supabase.from('mapa_atual').select('*'),
           supabase.from('secretarias').select('*'),
-          supabase.from('leituras_clima_irif').select('*')
+          fetch('/api/get-clima').then(r => r.json())
         ]);
+        const resEst = { data: [] };
+        const resIrif = { data: resIrifRaw.data || [] };
 
         const secList = resSec.data || [];
 
