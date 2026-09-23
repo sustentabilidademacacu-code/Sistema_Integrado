@@ -93,6 +93,7 @@ export default function DashboardsPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
       setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#ea580c');
     }
   }, []);
