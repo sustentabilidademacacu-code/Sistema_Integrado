@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 
-const ADMIN_USER = 'Sustentabilidade_SIMIIC';
-const ADMIN_PASS = 'SustentavelCLima2026@';
+// Credenciais agora são validadas de forma segura pelo Backend.
 
 const SECRETARIAS_FALLBACK = [
   { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete do Prefeito / Sala de Situação', cor_identidade: '#fbbf24' },
@@ -46,12 +45,21 @@ function AdminLoginScreen({ onLogin }) {
   const [showPass, setShowPass] = useState(false);
   const [erro, setErro] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      onLogin(pass);
-    } else {
-      setErro('Credenciais inválidas. Verifique usuário e senha.');
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user, pass })
+      });
+      if (res.ok) {
+        onLogin(pass);
+      } else {
+        setErro('Credenciais inválidas ou usuário não encontrado.');
+      }
+    } catch(err) {
+      setErro('Erro na conexão com o servidor.');
     }
   };
 
@@ -130,7 +138,7 @@ function PainelAdmin({ onLogout, adminPass }) {
 
   const handleCriacaoManual = async (e) => {
     e.preventDefault();
-    if (!novoSec) return alert('Selecione uma secretaria');
+    if (novoPerfil !== 'gabinete' && !novoSec) return alert('Selecione uma secretaria');
     const res = await fetch("/api/admin/approve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -148,6 +156,7 @@ function PainelAdmin({ onLogout, adminPass }) {
     if (res.ok) {
       alert("Conta criada diretamente com sucesso!");
       setNovoNome(""); setNovoEmail(""); setNovaSenha("");
+      fetchSolicitacoes();
     } else {
       alert("Erro ao criar conta: " + data.error);
     }
@@ -283,6 +292,31 @@ function PainelAdmin({ onLogout, adminPass }) {
     }
   };
 
+  const handleDeleteUser = async (id, email) => {
+    if (!confirm(`TEM CERTEZA ABSOLUTA que deseja excluir permanentemente a conta e o acesso de ${email}?`)) return;
+
+    try {
+      const res = await fetch("/api/admin/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          email,
+          admin_password: adminPass
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Conta excluída com sucesso.");
+        fetchSolicitacoes();
+      } else {
+        alert("Erro ao excluir: " + data.error);
+      }
+    } catch (e) {
+      alert("Erro na conexão");
+    }
+  };
+
   const nomeSecretaria = (secretaria_id) => {
     return secretariasList.find(s => String(s.id) === String(secretaria_id))?.nome || 'Não informada';
   };
@@ -301,6 +335,9 @@ function PainelAdmin({ onLogout, adminPass }) {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <Link href="/admin/irif" className="px-4 py-2 bg-amber-900/40 text-amber-500 border border-amber-900 hover:bg-amber-600 hover:text-white rounded-lg text-xs font-bold transition-all">
+            ⚙️ Editor da Fórmula IRIF
+          </Link>
           <span className="text-slate-400 text-xs font-bold">
             {solicitacoes.length} pendente{solicitacoes.length !== 1 ? 's' : ''}
           </span>
@@ -415,7 +452,7 @@ function PainelAdmin({ onLogout, adminPass }) {
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-slate-400 text-sm mb-6">Lista de usuários que já passaram por análise do Gabinete.</p>
+              <p className="text-slate-400 text-sm mb-6">Lista de usuários que já passaram por análise do Setor Responsável.</p>
               {historico.map(sol => (
                 <div key={sol.id} className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 flex flex-col gap-3">
                   <div className="flex justify-between items-start">
@@ -430,12 +467,20 @@ function PainelAdmin({ onLogout, adminPass }) {
                       <p className="text-slate-500 text-[10px] mt-1">Perfil: {sol.perfil?.toUpperCase()} — {nomeSecretaria(sol.secretaria_id)}</p>
                     </div>
                     {sol.status === 'liberado' && (
-                      <button 
-                        onClick={() => handleResetPassword(sol.email_institucional)}
-                        className="bg-orange-900/40 hover:bg-orange-900/80 text-orange-400 border border-orange-900 px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all"
-                      >
-                        Redefinir Senha
-                      </button>
+                      <div className="flex flex-col gap-2 items-end shrink-0 ml-2">
+                        <button 
+                          onClick={() => handleResetPassword(sol.email_institucional)}
+                          className="bg-orange-900/40 hover:bg-orange-900/80 text-orange-400 border border-orange-900 px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all w-full text-center"
+                        >
+                          Redefinir Senha
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(sol.id, sol.email_institucional)}
+                          className="bg-red-900/40 hover:bg-red-900/80 text-red-400 border border-red-900 px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-all w-full text-center"
+                        >
+                          Excluir Conta
+                        </button>
+                      </div>
                     )}
                   </div>
                   {sol.justificativa_admin && (
@@ -475,13 +520,15 @@ function PainelAdmin({ onLogout, adminPass }) {
                 <option value="gabinete">Gabinete (War Room)</option>
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Secretaria</label>
-              <select required value={novoSec} onChange={e => setNovoSec(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
-                <option value="">Selecione...</option>
-                {secretariasList.map(sec => <option key={sec.id} value={sec.id}>{sec.nome}</option>)}
-              </select>
-            </div>
+            {novoPerfil !== 'gabinete' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Secretaria</label>
+                <select required value={novoSec} onChange={e => setNovoSec(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
+                  <option value="">Selecione...</option>
+                  {secretariasList.map(sec => <option key={sec.id} value={sec.id}>{sec.nome}</option>)}
+                </select>
+              </div>
+            )}
             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-colors mt-2">
               Criar e Liberar Acesso
             </button>
@@ -496,10 +543,31 @@ function PainelAdmin({ onLogout, adminPass }) {
 export default function AdminPage() {
   const [adminLogado, setAdminLogado] = useState(false);
   const [adminPass, setAdminPass] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedPass = sessionStorage.getItem('smiic_admin_pass');
+      if (storedPass) {
+        setAdminPass(storedPass);
+        setAdminLogado(true);
+      }
+      setIsLoaded(true);
+    }
+  }, []);
+
+  if (!isLoaded) return null;
 
   if (!adminLogado) {
-    return <AdminLoginScreen onLogin={(pass) => { setAdminLogado(true); setAdminPass(pass); }} />;
+    return <AdminLoginScreen onLogin={(pass) => { 
+      sessionStorage.setItem('smiic_admin_pass', pass);
+      setAdminLogado(true); 
+      setAdminPass(pass); 
+    }} />;
   }
 
-  return <PainelAdmin onLogout={() => setAdminLogado(false)} adminPass={adminPass} />;
+  return <PainelAdmin onLogout={() => {
+    sessionStorage.removeItem('smiic_admin_pass');
+    setAdminLogado(false);
+  }} adminPass={adminPass} />;
 }

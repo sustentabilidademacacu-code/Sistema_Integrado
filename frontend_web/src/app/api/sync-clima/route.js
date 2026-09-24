@@ -45,7 +45,7 @@ function formatBRT(dateOrEpochMs) {
 
 async function fetchStationData(session) {
   const trintaDiasAtras = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
-  const url = `https://hexacloud.com.br/json_api/getAllData.php?session=${session}&since=${trintaDiasAtras}`;
+  const url = `https://hexacloud.com.br/json_api/influx_compat/getAllData.php?session=${session}&since=${trintaDiasAtras}`;
   
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {

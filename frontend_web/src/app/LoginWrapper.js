@@ -153,10 +153,10 @@ export default function LoginWrapper({ children }) {
       }
 
       if (perfilData.status === 'analise') {
-        setErro('⏳ Acesso Pendente: Sua conta está EM ANÁLISE pelo Gabinete. Tente novamente mais tarde ou entre em contato com o responsável.');
+        setErro('⏳ Acesso Pendente: Sua conta está EM ANÁLISE pelo Setor Responsável. Tente novamente mais tarde ou entre em contato com a administração.');
         await supabase.auth.signOut();
       } else if (perfilData.status === 'rejeitado') {
-        setErro('🚫 Acesso Negado: Sua solicitação foi REJEITADA pelo Gabinete. Entre em contato para mais informações.');
+        setErro('🚫 Acesso Negado: Sua solicitação foi REJEITADA pelo Setor Responsável. Entre em contato para mais informações.');
         await supabase.auth.signOut();
       } else if (perfilData.status === 'liberado') {
         // Salva info da secretaria no localStorage
@@ -374,7 +374,7 @@ export default function LoginWrapper({ children }) {
             <>
               <div className="text-center mb-6">
                 <h1 className="text-lg font-black text-slate-900 tracking-wide">Solicitar Acesso</h1>
-                <p className="text-[10px] text-slate-500 mt-2">Preencha seus dados. O acesso será liberado após análise do Gabinete.</p>
+                <p className="text-[10px] text-slate-500 mt-2">Preencha seus dados. O acesso será liberado após análise do Setor Responsável.</p>
               </div>
 
               {reqSucesso ? (
@@ -382,7 +382,7 @@ export default function LoginWrapper({ children }) {
                   <span className="text-3xl">✅</span>
                   <p className="font-bold">Solicitação enviada com sucesso!</p>
                   <p className="text-xs text-emerald-600 font-normal mt-1">
-                    Seu cadastro está <strong>EM ANÁLISE</strong> pelo Gabinete do Prefeito.<br/>
+                    Seu cadastro está <strong>EM ANÁLISE</strong> pelo Setor Responsável.<br/>
                     Quando aprovado, você receberá acesso e poderá entrar com seu usuário e senha.
                   </p>
                   <button 

@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import LogoutButton from '../../LogoutButton';
-import LoginWrapper from '../../LoginWrapper';
+import LogoutButton from '../LogoutButton';
+import LoginWrapper from '../LoginWrapper';
 import { STATIONS } from '@/data/stations';
 
 function Navbar({ secCor }) {
@@ -28,8 +28,8 @@ function Navbar({ secCor }) {
         </div>
         
         <div className="flex items-center gap-5 border-l border-neutral-200 pl-6 h-14">
-          <Link href="/operacional" className="text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 transition-colors px-4 py-2 rounded-lg mr-4 shadow-sm">
-            Voltar ao Mapa
+          <Link href="/" className="text-xs font-bold text-white bg-[#133570] hover:bg-blue-600 transition-colors px-4 py-2 rounded-lg mr-4 shadow-sm">
+            Voltar aos Painéis
           </Link>
           <div className="hidden lg:flex flex-col items-end mr-2">
             <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Sessão Ativa</span>
@@ -71,7 +71,7 @@ function IframeDashboard({ station }) {
       <div className="relative w-full h-[750px] bg-[#03132e]">
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a234f]/80 z-10">
-            <div className="w-10 h-10 border-4 border-[#133570] border-t-orange-500 rounded-full animate-spin mb-4"></div>
+            <div className="w-10 h-10 border-4 border-[#133570] border-t-white rounded-full animate-spin mb-4"></div>
             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Conectando à HexaCloud...</p>
           </div>
         )}
@@ -94,7 +94,7 @@ export default function DashboardsPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
-      setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#ea580c');
+      setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#022888');
     }
   }, []);
 
@@ -156,7 +156,7 @@ export default function DashboardsPage() {
                 placeholder="Buscar por nome, bairro ou localidade..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#03132e] border-2 border-[#1e4896] text-white text-sm font-medium rounded-2xl pl-12 pr-4 py-4 outline-none focus:border-orange-500 transition-all shadow-inner placeholder-slate-500"
+                className="w-full bg-[#03132e] border-2 border-[#1e4896] text-white text-sm font-medium rounded-2xl pl-12 pr-4 py-4 outline-none focus:border-blue-500 transition-all shadow-inner placeholder-slate-500"
               />
             </div>
           </div>
@@ -166,10 +166,10 @@ export default function DashboardsPage() {
             Object.entries(ativas).map(([regiao, estacoes]) => (
               <div key={`regiao-${regiao}`} className="mb-12">
                 <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-2xl font-black uppercase tracking-widest text-orange-500">
+                  <h2 className="text-2xl font-black uppercase tracking-widest text-slate-300">
                     📍 Localidade: {regiao}
                   </h2>
-                  <div className="h-[2px] flex-1 bg-gradient-to-r from-orange-500/50 to-transparent"></div>
+                  <div className="h-[2px] flex-1 bg-gradient-to-r from-[#133570] to-transparent"></div>
                 </div>
                 
                 {estacoes.map(st => (

@@ -74,6 +74,12 @@ function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
               <span>➔</span>
             </button>
           </Link>
+          <Link href="/ocorrencias">
+            <button className="w-full bg-[#0a234f] border border-blue-500/50 text-left px-4 py-3 rounded-lg text-sm font-bold text-white hover:bg-[#133570] transition-all shadow-sm flex items-center justify-between mb-2 shadow-blue-900/20">
+              Gestão de Ocorrências (Kanban)
+              <span>➔</span>
+            </button>
+          </Link>
           <Link href="/historico">
             <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between">
               Histórico de Ocorrências
@@ -95,9 +101,14 @@ function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
               <div className="flex items-start justify-between gap-2">
                 <span className="text-sm font-bold text-slate-200 leading-tight">{est.nome}</span>
                 {est.irif && (
-                  <span className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0" style={{backgroundColor: est.irif.level.color}}>
+                  <button 
+                    onClick={() => onSelectEstacao && onSelectEstacao(est.id)}
+                    title="Clique para ver os detalhes do IRIF"
+                    className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0 cursor-pointer hover:scale-105 transition-all animate-pulse hover:animate-none border border-white/20" 
+                    style={{backgroundColor: est.irif.level.color, boxShadow: `0 0 12px ${est.irif.level.color}80`}}
+                  >
                     IRIF: {Math.round(est.irif.irif)}
-                  </span>
+                  </button>
                 )}
               </div>
               
@@ -122,20 +133,14 @@ function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
                 )}
               </div>
               
-              <div className="flex items-center justify-between mt-1 pt-3 border-t border-[#133570]/50">
+              <div className="flex items-center justify-center mt-1 pt-3 border-t border-[#133570]/50">
                 <div className="text-[10px] text-slate-500 font-medium">
                   {est.raw.updatedAt ? (
-                    <>🕒 {new Date(est.raw.updatedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</>
+                    <>🕒 {String(est.raw.updatedAt).includes('/') ? String(est.raw.updatedAt).substring(0, 17).replace(', ', ' às ') : new Date(est.raw.updatedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</>
                   ) : (
                     'Sem conexão'
                   )}
                 </div>
-                <button 
-                  onClick={() => onSelectEstacao && onSelectEstacao(est.id)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded transition-colors"
-                >
-                  Abrir Painel
-                </button>
               </div>
             </div>
           ))}

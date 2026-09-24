@@ -38,6 +38,15 @@ export const STATION_FORMULAS = {
 };
 
 export function stationWeights(st) {
+  try {
+    if (typeof window !== 'undefined') {
+      const storedStr = localStorage.getItem('smiic_irif_weights');
+      if (storedStr) {
+        const stored = JSON.parse(storedStr);
+        if (stored[st.session]) return stored[st.session];
+      }
+    }
+  } catch(e) {}
   return STATION_FORMULAS[st.session] || DEFAULT_WEIGHTS;
 }
 
@@ -71,17 +80,25 @@ export function levelFor(irif) {
 }
 
 export function defaultStateFor(st) {
+  let localOverrides = {};
+  try {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('smiic_station_features_' + st.session);
+      if (stored) localOverrides = JSON.parse(stored);
+    }
+  } catch(e) {}
+
   return {
     ur: null,
     dias: null,
     temp: null,
     vento: null,
     sazonal: false,
-    decliv: nearestOption('decliv', st.decliv_score),
-    acesso: 20,
-    veg: nearestOption('veg', st.fv_score),
-    antrop: nearestOption('antrop', st.fa_score),
-    dist: nearestOption('dist', st.fd_score),
+    decliv: localOverrides.decliv ?? nearestOption('decliv', st.decliv_score),
+    acesso: localOverrides.acesso ?? 20,
+    veg: localOverrides.veg ?? nearestOption('veg', st.fv_score),
+    antrop: localOverrides.antrop ?? nearestOption('antrop', st.fa_score),
+    dist: localOverrides.dist ?? nearestOption('dist', st.fd_score),
     unlock: { ff: false, fv: false, fa: false, fd: false },
   };
 }

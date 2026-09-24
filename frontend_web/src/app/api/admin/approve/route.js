@@ -10,9 +10,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Senha de administrador incorreta.' }, { status: 401 });
     }
 
+    const formattedEmail = email_institucional.includes('@') ? email_institucional : `${email_institucional.trim().toLowerCase()}@sistema.local`;
+
     // Verifica se o usuário já existe no Auth (criado pelo signUp na solicitação)
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find(u => u.email === email_institucional);
+    const userExists = existingUsers?.users?.find(u => u.email === formattedEmail);
 
     if (userExists) {
       // Usuário já existe (veio do signUp) — apenas confirma o email e atualiza metadata
@@ -27,7 +29,7 @@ export async function POST(request) {
     } else {
       // Usuário NÃO existe (criação manual pelo admin) — cria no Auth
       const { error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: email_institucional,
+        email: formattedEmail,
         password: senha_provisoria,
         email_confirm: true,
         user_metadata: { nome_completo, secretaria_id, perfil }
@@ -49,13 +51,14 @@ export async function POST(request) {
       }).eq('id', id);
     } else {
       // Criação direta pelo admin — insere registro na tabela de acesso já como liberado
-      const formattedEmail = email_institucional.includes('@') ? email_institucional : `${email_institucional.trim().toLowerCase()}@sistema.local`;
       await supabaseAdmin.from('solicitacao_acesso').insert([{
         nome_completo,
         email_institucional: formattedEmail,
         secretaria_id: secretaria_id || null,
         status: 'liberado',
-        perfil: perfil || 'operacional'
+        perfil: perfil || 'operacional',
+        justificativa_admin: 'Conta criada e aprovada diretamente pelo painel administrativo.',
+        data_analise: new Date().toISOString()
       }]);
     }
 

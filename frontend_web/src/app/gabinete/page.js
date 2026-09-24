@@ -63,14 +63,14 @@ function Sidebar({ estacoes, secretarias, onSelectEstacao }) {
       {/* SELO DE AUTORIDADE / COMANDO CENTRAL */}
       <div className="p-6 border-b border-[#03132e] flex flex-col justify-center bg-gradient-to-br from-[#03132e] to-slate-950 relative overflow-hidden">
         {/* Efeito de brilho no selo */}
-        <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/10 rounded-full blur-xl"></div>
+        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-500/20 rounded-full blur-xl"></div>
         
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-full bg-[#133570] border border-[#1e4896] flex items-center justify-center shadow-lg">
-            <span className="text-sm">🛡️</span>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+            <span className="text-sm">👑</span>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Comando Central
+          <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">
+            God View
           </span>
         </div>
         
@@ -88,22 +88,28 @@ function Sidebar({ estacoes, secretarias, onSelectEstacao }) {
           <span>📊</span> Visão Geral
         </p>
         <div className="mb-8 px-1">
-          <Link href="/defesa-civil/dashboards">
-            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between group mb-2">
+          <Link href="/panorama">
+            <button className="w-full bg-gradient-to-r from-[#0a234f] to-[#03132e] border border-amber-500/30 text-left px-4 py-3 rounded-lg text-sm font-bold text-amber-100 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all flex items-center justify-between group mb-2">
               Panorama Exaclima
-              <span className="opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
+              <span className="text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
             </button>
           </Link>
           <Link href="/operacional">
-            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between group mb-2">
+            <button className="w-full bg-gradient-to-r from-[#0a234f] to-[#03132e] border border-amber-500/30 text-left px-4 py-3 rounded-lg text-sm font-bold text-amber-100 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all flex items-center justify-between group mb-2">
               Painel Operacional
-              <span className="opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
+              <span className="text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
+            </button>
+          </Link>
+          <Link href="/ocorrencias">
+            <button className="w-full bg-gradient-to-r from-amber-900/40 to-[#03132e] border border-amber-500/50 text-left px-4 py-3 rounded-lg text-sm font-bold text-amber-300 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all flex items-center justify-between group mb-2">
+              Gestão de Ocorrências
+              <span className="text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
             </button>
           </Link>
           <Link href="/historico">
-            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between group">
+            <button className="w-full bg-gradient-to-r from-[#0a234f] to-[#03132e] border border-amber-500/30 text-left px-4 py-3 rounded-lg text-sm font-bold text-amber-100 hover:border-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all flex items-center justify-between group">
               Relatório Completo
-              <span className="opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
+              <span className="text-amber-500 opacity-50 group-hover:opacity-100 transition-opacity">➔</span>
             </button>
           </Link>
         </div>
@@ -115,14 +121,19 @@ function Sidebar({ estacoes, secretarias, onSelectEstacao }) {
           {estacoes.map(est => (
             <div 
               key={est.id} 
-              className="bg-[#0a234f]/80 border border-[#133570]/80 rounded-lg p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-[#0a234f]/80 border border-amber-500/20 rounded-lg p-4 flex flex-col gap-3 shadow-sm hover:shadow-[0_0_15px_rgba(245,158,11,0.15)] transition-shadow"
             >
               <div className="flex items-start justify-between gap-2">
-                <span className="text-sm font-bold text-slate-200 leading-tight">{est.nome}</span>
+                <span className="text-sm font-bold text-amber-50 leading-tight">{est.nome}</span>
                 {est.irif && (
-                  <span className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0" style={{backgroundColor: est.irif.level.color}}>
+                  <button 
+                    onClick={() => onSelectEstacao && onSelectEstacao(est.id)}
+                    title="Clique para ver os detalhes do IRIF"
+                    className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0 cursor-pointer hover:scale-105 transition-all animate-pulse hover:animate-none border border-white/20" 
+                    style={{backgroundColor: est.irif.level.color, boxShadow: `0 0 12px ${est.irif.level.color}80`}}
+                  >
                     IRIF: {Math.round(est.irif.irif)}
-                  </span>
+                  </button>
                 )}
               </div>
               
@@ -147,20 +158,14 @@ function Sidebar({ estacoes, secretarias, onSelectEstacao }) {
                 )}
               </div>
               
-              <div className="flex items-center justify-between mt-1 pt-3 border-t border-[#133570]/50">
+              <div className="flex items-center justify-center mt-1 pt-3 border-t border-[#133570]/50">
                 <div className="text-[10px] text-slate-500 font-medium">
                   {est.raw.updatedAt ? (
-                    <>🕒 {new Date(est.raw.updatedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</>
+                    <>🕒 {String(est.raw.updatedAt).includes('/') ? String(est.raw.updatedAt).substring(0, 17).replace(', ', ' às ') : new Date(est.raw.updatedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</>
                   ) : (
                     'Sem conexão'
                   )}
                 </div>
-                <button 
-                  onClick={() => onSelectEstacao && onSelectEstacao(est.id)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-3 py-1.5 rounded transition-colors"
-                >
-                  Abrir Painel
-                </button>
               </div>
             </div>
           ))}
@@ -301,7 +306,7 @@ export default function Gabinete() {
                   </div>
                   
                   <div className="flex items-center gap-4">
-                    <div className="px-5 py-2.5 rounded-lg text-sm font-black border border-[#133570] bg-[#03132e]/80 shadow-lg text-slate-300 backdrop-blur-sm">
+                    <div className="px-5 py-2.5 rounded-lg text-sm font-black border border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-transparent shadow-[0_0_15px_rgba(245,158,11,0.2)] text-amber-200 backdrop-blur-sm">
                       TOTAL DE ATIVOS: <span className="text-white text-lg ml-2">{ocorrencias.length}</span>
                     </div>
                   </div>
@@ -323,8 +328,8 @@ export default function Gabinete() {
 
                 <div className="mt-10 mb-6 flex items-center justify-between">
                   <h3 className="text-lg font-black text-white flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
-                    Ocorrências Abertas (Todas as Secretarias)
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span>
+                    Ocorrências Abertas (Visão Geral)
                   </h3>
                 </div>
                 
