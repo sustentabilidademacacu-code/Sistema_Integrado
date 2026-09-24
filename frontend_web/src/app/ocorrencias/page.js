@@ -23,13 +23,16 @@ export default function OcorrenciasKanban() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserPerfil(localStorage.getItem('smiic_user_perfil') || '');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserSecId(localStorage.getItem('smiic_secretaria_id') || '');
     }
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     setLoading(true);
     try {
       const [resOco, resSec] = await Promise.all([
@@ -264,7 +267,7 @@ function OcorrenciaCard({ oco, onAdvance, onReturn, isConcluido, secColor, secNa
       </div>
 
       <p className="text-slate-300 text-[11px] bg-[#03132e]/50 p-2 rounded border border-[#133570] italic">
-        "{oco.descricao}"
+        &quot;{oco.descricao}&quot;
       </p>
 
       {/* Secretária Label */}
