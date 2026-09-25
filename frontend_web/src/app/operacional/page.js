@@ -114,7 +114,7 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
         </div>
 
         <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 px-2 flex items-center gap-2">
-          <span>📡</span> Sensores e Estações
+          <span>🔥</span> Risco de Incêndio — Sensores e Estações
         </p>
         <div className="space-y-3 px-1">
           {estacoes.map(est => (
@@ -122,50 +122,25 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
               key={est.id} 
               className="bg-[#0a234f]/80 border border-[#133570]/80 rounded-lg p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-bold text-slate-200 leading-tight">{est.nome}</span>
                 {est.irif && (
                   <button 
-                    onClick={() => onSelectEstacao && onSelectEstacao(est.id)}
-                    title="Clique para ver os detalhes do IRIF"
-                    className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0 cursor-pointer hover:scale-105 transition-all animate-pulse hover:animate-none border border-white/20" 
+                    onClick={() => window.open('/panorama', '_blank')}
+                    title="Clique para abrir o painel da HexaCloud"
+                    className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0 cursor-pointer hover:scale-105 transition-all animate-pulse border border-white/20" 
                     style={{backgroundColor: est.irif.level.color, boxShadow: `0 0 12px ${est.irif.level.color}80`}}
                   >
                     IRIF: {Math.round(est.irif.irif)}
                   </button>
                 )}
               </div>
-              
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                {est.raw.temp != null && (
-                  <div className="bg-[#03132e] rounded p-2 flex flex-col items-center justify-center border border-[#133570]/50">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide">Temperatura</span>
-                    <span className="text-sm font-black text-white">{est.raw.temp}°C</span>
-                  </div>
-                )}
-                {est.raw.ur != null && (
-                  <div className="bg-[#03132e] rounded p-2 flex flex-col items-center justify-center border border-[#133570]/50">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide">Umidade</span>
-                    <span className="text-sm font-black text-[#0ea5e9]">{est.raw.ur}%</span>
-                  </div>
-                )}
-                {est.raw.vento != null && (
-                  <div className="bg-[#03132e] rounded p-2 flex flex-col items-center justify-center border border-[#133570]/50">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wide">Vento</span>
-                    <span className="text-sm font-black text-[#10b981]">{est.raw.vento} km/h</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex items-center justify-center mt-1 pt-3 border-t border-[#133570]/50">
-                <div className="text-[10px] text-slate-500 font-medium">
-                  {est.raw.updatedAt ? (
-                    <>🕒 {String(est.raw.updatedAt).includes('/') ? String(est.raw.updatedAt).substring(0, 17).replace(', ', ' às ') : new Date(est.raw.updatedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</>
-                  ) : (
-                    'Sem conexão'
-                  )}
-                </div>
-              </div>
+              <button 
+                onClick={() => window.open('/panorama', '_blank')}
+                className="w-full text-center text-[10px] uppercase font-bold text-slate-400 hover:text-white mt-1 border-t border-[#133570]/50 pt-2 transition-colors"
+              >
+                Ver Painel Completo →
+              </button>
             </div>
           ))}
         </div>
