@@ -166,8 +166,16 @@ function PainelAdmin({ onLogout, adminPass }) {
   const [historico, setHistorico] = useState([]);
   const [secretariasList, setSecretariasList] = useState(SECRETARIAS_FALLBACK);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('pendentes'); // 'pendentes' ou 'historico'
+  const [activeTab, setActiveTab] = useState('pendentes'); // pendentes | historico | secretarias | ocorrencias
   
+  // Estados para Secretarias
+  const [novaSecretaria, setNovaSecretaria] = useState({ nome: '', cor_identidade: '#133570' });
+
+  // Estados para Ocorrências
+  const [todasOcorrencias, setTodasOcorrencias] = useState([]);
+  const [editOcoId, setEditOcoId] = useState(null);
+  const [editOcoForm, setEditOcoForm] = useState({});
+
   // Guarda o perfil selecionado para cada solicitação { [id]: 'operacional'|'gabinete' }
   const [perfisEscolhidos, setPerfisEscolhidos] = useState({});
   const [justificativas, setJustificativas] = useState({});
@@ -211,6 +219,60 @@ function PainelAdmin({ onLogout, adminPass }) {
   useEffect(() => {
     fetchSolicitacoes();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'ocorrencias') {
+      fetchOcorrencias();
+    }
+  }, [activeTab]);
+
+  async function fetchOcorrencias() {
+    const { data, error } = await supabase.from('ocorrencias').select('*').order('created_at', { ascending: false });
+    if (data) setTodasOcorrencias(data);
+  }
+
+  const handleCreateSecretaria = async (e) => {
+    e.preventDefault();
+    if (!novaSecretaria.nome) return alert('Digite o nome');
+    const { error } = await supabase.from('secretarias').insert([novaSecretaria]);
+    if (!error) {
+      alert("Secretaria adicionada!");
+      setNovaSecretaria({ nome: '', cor_identidade: '#133570' });
+      fetchSolicitacoes();
+    } else {
+      alert("Erro ao adicionar secretaria");
+    }
+  };
+
+  const handleVerPainel = (sec, tipo) => {
+    const isGabinete = sec.nome.toLowerCase().includes('gabinete');
+    localStorage.setItem('smiic_secretaria_id', sec.id);
+    localStorage.setItem('smiic_secretaria_nome', sec.nome);
+    localStorage.setItem('smiic_secretaria_cor', sec.cor_identidade);
+    localStorage.setItem('smiic_perfil', isGabinete ? 'gabinete' : 'operacional');
+    localStorage.setItem('smiic_user_perfil', isGabinete ? 'gabinete' : 'operacional');
+    window.open(`/${tipo}`, '_blank');
+  };
+
+  const handleUpdateOcorrencia = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.from('ocorrencias').update(editOcoForm).eq('id', editOcoId);
+    if (!error) {
+      alert('Ocorrência atualizada com sucesso!');
+      setEditOcoId(null);
+      fetchOcorrencias();
+    } else {
+      alert('Erro ao atualizar ocorrência.');
+    }
+  };
+
+  const handleDeleteOcorrencia = async (id) => {
+    if (!confirm('Tem certeza que deseja excluir esta ocorrência permanentemente?')) return;
+    const { error } = await supabase.from('ocorrencias').delete().eq('id', id);
+    if (!error) {
+      fetchOcorrencias();
+    }
+  };
 
   const handleUpdateStatus = async (id, novoStatus) => {
     const perfilEscolhido = perfisEscolhidos[id] || 'operacional';
@@ -350,18 +412,30 @@ function PainelAdmin({ onLogout, adminPass }) {
         </div>
       </div>
 
-      <div className="bg-[#133570] px-8 py-0 flex gap-4 border-b border-[#1e4896]">
+      <div className="bg-[#133570] px-8 py-0 flex gap-4 border-b border-[#1e4896] overflow-x-auto">
         <button 
           onClick={() => setActiveTab('pendentes')}
-          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all ${activeTab === 'pendentes' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all whitespace-nowrap ${activeTab === 'pendentes' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
         >
           Pendentes ({solicitacoes.length})
         </button>
         <button 
           onClick={() => setActiveTab('historico')}
-          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all ${activeTab === 'historico' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all whitespace-nowrap ${activeTab === 'historico' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
         >
           Histórico e Relatórios ({historico.length})
+        </button>
+        <button 
+          onClick={() => setActiveTab('secretarias')}
+          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all whitespace-nowrap ${activeTab === 'secretarias' ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          Gerenciar Secretarias
+        </button>
+        <button 
+          onClick={() => setActiveTab('ocorrencias')}
+          className={`py-3 px-4 font-bold text-sm border-b-2 transition-all whitespace-nowrap ${activeTab === 'ocorrencias' ? 'border-orange-500 text-orange-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+        >
+          Gerenciar Ocorrências
         </button>
       </div>
 
@@ -494,6 +568,153 @@ function PainelAdmin({ onLogout, adminPass }) {
               ))}
             </div>
           )
+        ) : activeTab === 'secretarias' ? (
+          <div className="space-y-6">
+            <div className="bg-[#0a234f] border border-[#133570] rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Adicionar Nova Secretaria</h2>
+              <form onSubmit={handleCreateSecretaria} className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Órgão / Secretaria</label>
+                  <input required type="text" value={novaSecretaria.nome} onChange={e => setNovaSecretaria({...novaSecretaria, nome: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Ex: Secretaria de Cultura" />
+                </div>
+                <div className="w-24 shrink-0">
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cor</label>
+                  <input required type="color" value={novaSecretaria.cor_identidade} onChange={e => setNovaSecretaria({...novaSecretaria, cor_identidade: e.target.value})} className="w-full h-[46px] rounded-lg cursor-pointer bg-transparent border-0 p-0" />
+                </div>
+                <button type="submit" className="px-6 h-[46px] bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors">
+                  + Adicionar
+                </button>
+              </form>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {secretariasList.map(sec => (
+                <div key={sec.id} className="bg-[#0a234f] border border-[#133570] rounded-xl p-5 flex flex-col justify-between" style={{ borderLeftWidth: '4px', borderLeftColor: sec.cor_identidade }}>
+                  <div>
+                    <h3 className="text-white font-bold text-sm mb-1">{sec.nome}</h3>
+                    <p className="text-[10px] text-slate-400">ID: {sec.id}</p>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button onClick={() => handleVerPainel(sec, 'operacional')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
+                      Painel Operacional
+                    </button>
+                    <button onClick={() => handleVerPainel(sec, 'panorama')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
+                      Panorama
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-[#0a234f] border border-[#133570] rounded-xl overflow-hidden">
+            <div className="p-4 border-b border-[#133570] bg-[#03132e]">
+              <h2 className="text-white font-bold">Gerenciador de Ocorrências</h2>
+              <p className="text-slate-400 text-xs">Altere status, descrição e atributos dos chamados via front-end.</p>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-300">
+                <thead className="bg-[#133570]/50 text-xs uppercase font-bold text-slate-400">
+                  <tr>
+                    <th className="px-4 py-3">Data</th>
+                    <th className="px-4 py-3">Categoria</th>
+                    <th className="px-4 py-3">Bairro / Local</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#133570]">
+                  {todasOcorrencias.map(oco => (
+                    <tr key={oco.id} className="hover:bg-[#133570]/20 transition-colors">
+                      <td className="px-4 py-3 text-xs whitespace-nowrap">{new Date(oco.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 font-medium text-white">{oco.categoria}</td>
+                      <td className="px-4 py-3 text-xs">{oco.bairro}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${oco.status === 'Concluido' || oco.status === 'Concluído' ? 'bg-emerald-900/50 text-emerald-400' : oco.status === 'Em Atendimento' ? 'bg-amber-900/50 text-amber-400' : 'bg-red-900/50 text-red-400'}`}>
+                          {oco.status || 'Pendente'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                        <button 
+                          onClick={() => { setEditOcoId(oco.id); setEditOcoForm(oco); }}
+                          className="text-blue-400 hover:text-blue-300 font-bold text-xs uppercase"
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteOcorrencia(oco.id)}
+                          className="text-red-400 hover:text-red-300 font-bold text-xs uppercase"
+                        >
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {todasOcorrencias.length === 0 && (
+              <div className="p-8 text-center text-slate-500">Nenhuma ocorrência encontrada.</div>
+            )}
+          </div>
+        )}
+
+        {/* Modal de Edição de Ocorrência */}
+        {editOcoId && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="bg-[#0a234f] border border-[#133570] rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+              <h2 className="text-white font-black text-lg mb-4 uppercase">Editar Ocorrência</h2>
+              <form onSubmit={handleUpdateOcorrencia} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Categoria</label>
+                  <input type="text" value={editOcoForm.categoria || ''} onChange={e => setEditOcoForm({...editOcoForm, categoria: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Descrição</label>
+                  <textarea value={editOcoForm.descricao || ''} onChange={e => setEditOcoForm({...editOcoForm, descricao: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm h-24" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Bairro</label>
+                    <input type="text" value={editOcoForm.bairro || ''} onChange={e => setEditOcoForm({...editOcoForm, bairro: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                    <select value={editOcoForm.status || ''} onChange={e => setEditOcoForm({...editOcoForm, status: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm">
+                      <option value="Pendente">Pendente</option>
+                      <option value="Em Atendimento">Em Atendimento</option>
+                      <option value="Concluido">Concluído</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Prioridade</label>
+                    <select value={editOcoForm.prioridade_acao || ''} onChange={e => setEditOcoForm({...editOcoForm, prioridade_acao: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm">
+                      <option value="BAIXA">BAIXA</option>
+                      <option value="MÉDIA">MÉDIA</option>
+                      <option value="ALTA">ALTA</option>
+                      <option value="CRÍTICA">CRÍTICA</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Atribuir a</label>
+                    <select value={editOcoForm.secretaria_id || ''} onChange={e => setEditOcoForm({...editOcoForm, secretaria_id: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm">
+                      <option value="">(Nenhuma)</option>
+                      {secretariasList.map(sec => <option key={sec.id} value={sec.id}>{sec.nome}</option>)}
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[#133570]">
+                  <button type="button" onClick={() => setEditOcoId(null)} className="px-4 py-2 text-slate-400 font-bold hover:text-white transition-colors">Cancelar</button>
+                  <button type="submit" className="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold shadow-lg">Salvar Alterações</button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
         </div>
 
