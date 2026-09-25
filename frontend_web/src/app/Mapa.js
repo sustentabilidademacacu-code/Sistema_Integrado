@@ -465,25 +465,10 @@ export default function Mapa({ ocorrencias = [], estacoes = [], onSelectEstacao,
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-1 mt-2">
-                    {est.raw?.temp != null && (
-                      <div className="bg-slate-100 rounded px-2 py-1 flex items-center justify-between">
-                        <span className="text-[9px] text-slate-500 uppercase font-bold">Temp</span>
-                        <span className="text-[11px] font-black text-slate-700">{est.raw.temp}°</span>
-                      </div>
-                    )}
-                    {est.raw?.ur != null && (
-                      <div className="bg-slate-100 rounded px-2 py-1 flex items-center justify-between">
-                        <span className="text-[9px] text-slate-500 uppercase font-bold">Umid</span>
-                        <span className="text-[11px] font-black text-[#0ea5e9]">{est.raw.ur}%</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="w-full h-px bg-slate-200 my-1"></div>
+                  <div className="w-full h-px bg-slate-200 my-1 mt-3"></div>
                   
                   <button 
-                    onClick={() => onSelectEstacao && onSelectEstacao(est.id)}
+                    onClick={() => window.open('/panorama', '_blank')}
                     className="w-full mt-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 rounded transition-colors"
                   >
                     Ver Painel Completo

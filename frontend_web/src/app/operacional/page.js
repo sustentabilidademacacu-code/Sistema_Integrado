@@ -244,14 +244,7 @@ export default function Operacional() {
     // Chamada inicial rápida (Puxa do banco)
     fetchData();
 
-    // Sincronização em Background (Puxa dados novos da HexaCloud e atualiza o banco)
-    fetch('/api/sync-clima')
-      .then(res => res.json())
-      .then(() => {
-        // Quando terminar de sincronizar as 11 estações, atualiza a tela
-        fetchData();
-      })
-      .catch(e => console.error("Erro no sync em background:", e));
+
 
     // Auto-refresh a cada 1 minuto para manter a tela viva
     const interval = setInterval(() => {
