@@ -49,19 +49,43 @@ function Navbar({ secCor }) {
   );
 }
 
-function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
+function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
   return (
     <aside className="w-80 bg-[#03132e] flex flex-col z-10 shadow-2xl relative border-r border-[#03132e]">
       
       {/* CARD DA SECRETARIA NO TOPO DO MENU */}
-      <div className="p-6 border-b border-[#03132e] flex flex-col justify-center" style={{ backgroundColor: `${secCor}15`, borderBottomColor: `${secCor}30` }}>
-        <span className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: secCor }}>
-          Setor Responsável
-        </span>
-        <h2 className="text-[13px] font-bold text-white leading-snug uppercase">
-          {secNome || 'Carregando...'}
-        </h2>
-      </div>
+      {userPerfil === 'gabinete' ? (
+        <div className="p-6 border-b border-[#03132e] flex flex-col justify-center bg-gradient-to-br from-[#03132e] to-slate-950 relative overflow-hidden">
+          {/* Efeito de brilho no selo */}
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-500/20 rounded-full blur-xl"></div>
+          
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+              <span className="text-sm">👑</span>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">
+              God View
+            </span>
+          </div>
+          
+          <h2 className="text-[15px] font-black text-white leading-snug uppercase tracking-wide">
+            Gabinete do Prefeito
+          </h2>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse"></span>
+            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Monitoramento Ativo</span>
+          </div>
+        </div>
+      ) : (
+        <div className="p-6 border-b border-[#03132e] flex flex-col justify-center" style={{ backgroundColor: `${secCor}15`, borderBottomColor: `${secCor}30` }}>
+          <span className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: secCor }}>
+            Setor Responsável
+          </span>
+          <h2 className="text-[13px] font-bold text-white leading-snug uppercase">
+            {secNome || 'Carregando...'}
+          </h2>
+        </div>
+      )}
 
       <nav className="flex-1 p-4 overflow-y-auto">
         <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 px-2 flex items-center gap-2 mt-2">
@@ -163,9 +187,12 @@ export default function Operacional() {
   const [loading, setLoading] = useState(true);
   const [secNome, setSecNome] = useState('');
   const [secCor, setSecCor] = useState('');
+  const [userPerfil, setUserPerfil] = useState('');
 
   useEffect(() => {
     const id = typeof window !== 'undefined' ? localStorage.getItem('smiic_secretaria_id') || '' : '';
+    const perfil = typeof window !== 'undefined' ? localStorage.getItem('smiic_user_perfil') || '' : '';
+    setUserPerfil(perfil);
 
     const fetchData = async () => {
       setSecNome(localStorage.getItem('smiic_secretaria_nome') || 'Secretaria Operacional');
@@ -261,7 +288,7 @@ export default function Operacional() {
         <Navbar secCor={secCor} />
 
         <div className="flex flex-1 overflow-hidden">
-          <Sidebar estacoes={estacoes} secCor={secCor} secNome={secNome} onSelectEstacao={setEstacaoSelecionadaId} />
+          <Sidebar estacoes={estacoes} secCor={secCor} secNome={secNome} userPerfil={userPerfil} onSelectEstacao={setEstacaoSelecionadaId} />
 
           <main className="flex-1 overflow-y-auto p-8 bg-neutral-950 relative">
             
