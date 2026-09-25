@@ -8,8 +8,8 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Aviso de Configuração: Chaves do Supabase não encontradas nas variáveis de ambiente. Verifique o arquivo .env.local.");
