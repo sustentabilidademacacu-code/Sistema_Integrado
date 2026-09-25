@@ -116,7 +116,7 @@ export default function OcorrenciasKanban() {
           >
             + Simular Ocorrência (App Cidadão)
           </button>
-          <Link href={userPerfil === 'gabinete' ? "/gabinete" : "/operacional"} className="px-4 py-2 bg-[#133570] hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all">
+          <Link href="/operacional" className="px-4 py-2 bg-[#133570] hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all">
             ← Voltar ao Painel
           </Link>
         </div>

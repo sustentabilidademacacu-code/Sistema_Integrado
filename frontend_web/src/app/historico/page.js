@@ -55,7 +55,7 @@ export default function HistoricoPage() {
               </p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
-              <Link href="/gabinete" className="px-3 md:px-5 py-2.5 bg-[#022888] hover:bg-blue-800 text-white text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap">
+              <Link href="/operacional" className="px-3 md:px-5 py-2.5 bg-[#022888] hover:bg-blue-800 text-white text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap">
                 ← Voltar ao Mapa
               </Link>
               <div className="h-12 w-px bg-slate-200 mx-2"></div>

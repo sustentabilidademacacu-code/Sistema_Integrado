@@ -9,9 +9,7 @@ export default function RootIndex() {
   useEffect(() => {
     // Só redireciona se já houver sessão salva (usuário logado)
     const perfil = localStorage.getItem('smiic_perfil');
-    if (perfil === 'gabinete') {
-      router.push('/gabinete');
-    } else if (perfil === 'operacional') {
+    if (perfil === 'gabinete' || perfil === 'operacional') {
       router.push('/operacional');
     }
     // Se não tiver perfil salvo, não faz nada — o LoginWrapper mostra a tela de login

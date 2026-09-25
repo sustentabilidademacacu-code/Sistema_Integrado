@@ -170,12 +170,10 @@ export default function LoginWrapper({ children }) {
         localStorage.setItem('smiic_perfil', perfilData.perfil || 'operacional');
         
         setIsAuthenticated(true);
-        if (perfilData.perfil === 'gabinete') {
-          window.location.href = '/gabinete';
-        } else if (perfilData.perfil === 'operacional') {
+        if (perfilData.perfil === 'gabinete' || perfilData.perfil === 'operacional') {
           window.location.href = '/operacional';
         } else {
-          window.location.href = '/gabinete';
+          window.location.href = '/operacional';
         }
       } else {
         setErro('Status de conta desconhecido. Contate o administrador.');

@@ -88,7 +88,7 @@ export default function MapaCompleto() {
       
       {/* Botão flutuante para voltar ao painel */}
       <Link
-        href="/gabinete"
+        href="/operacional"
         className="absolute top-4 right-4 z-[2000] bg-[#050f20]/90 hover:bg-[#1e4896]/90 backdrop-blur-md text-slate-300 hover:text-white shadow-2xl px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10 hover:border-blue-500/40"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

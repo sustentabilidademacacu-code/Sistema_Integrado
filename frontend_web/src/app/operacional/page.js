@@ -210,7 +210,11 @@ export default function Operacional() {
 
         if (resOco.data) {
           const filtered = resOco.data
-            .filter(oco => String(oco.secretaria_id) === String(id) && oco.status !== 'Concluido')
+            .filter(oco => {
+              if (oco.status === 'Concluido' || oco.status === 'Concluído') return false;
+              if (perfil === 'gabinete') return true;
+              return String(oco.secretaria_id) === String(id);
+            })
             .map(oco => {
               const sec = secList.find(s => String(s.id) === String(oco.secretaria_id));
               return {
@@ -303,9 +307,11 @@ export default function Operacional() {
               <>
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-white tracking-wide">Ocorrências Direcionadas</h2>
+                    <h2 className="text-2xl font-bold text-white tracking-wide">
+                      {userPerfil === 'gabinete' ? 'Ocorrências Gerais' : 'Ocorrências Direcionadas'}
+                    </h2>
                     <p className="text-sm text-neutral-400 mt-1">
-                      Módulo de campo e execução técnica.
+                      {userPerfil === 'gabinete' ? 'Visão global da cidade.' : 'Módulo de campo e execução técnica.'}
                     </p>
                   </div>
                   
