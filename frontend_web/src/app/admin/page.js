@@ -517,7 +517,7 @@ function PainelAdmin({ onLogout, adminPass }) {
               ))}
             </div>
           )
-        ) : (
+        ) : activeTab === 'historico' ? (
           historico.length === 0 ? (
             <div className="bg-[#0a234f] border border-dashed border-[#1e4896] rounded-2xl p-16 text-center">
               <span className="text-5xl block mb-4">🗂️</span>
