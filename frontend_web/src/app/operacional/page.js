@@ -68,7 +68,7 @@ function Sidebar({ estacoes, secCor, secNome, onSelectEstacao }) {
           <span>📅</span> Acervo
         </p>
         <div className="mb-8 px-1 flex flex-col gap-2">
-          <Link href="/defesa-civil/dashboards">
+          <Link href="/panorama">
             <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between mb-2">
               Panorama Exaclima
               <span>➔</span>
