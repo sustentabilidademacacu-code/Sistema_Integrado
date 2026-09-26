@@ -49,7 +49,7 @@ function Navbar({ secCor }) {
   );
 }
 
-function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao, equipe }) {
+function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao, onShowEquipe }) {
   return (
     <aside className="w-80 bg-[#03132e] flex flex-col z-10 shadow-2xl relative border-r border-[#03132e]">
       
@@ -114,21 +114,15 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao, equip
         </div>
 
         <div className="mb-6 px-1">
-          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-2">
-            <span>👥</span> Equipe do Setor
-          </p>
-          <div className="bg-[#0a234f] border border-[#133570] rounded-lg p-3 max-h-32 overflow-y-auto custom-scrollbar">
-            {equipe && equipe.length > 0 ? (
-              equipe.map((membro, idx) => (
-                <div key={idx} className="text-xs text-slate-300 py-1.5 border-b border-[#133570]/50 last:border-0">
-                  <strong className="block text-white">{membro.nome_completo}</strong> 
-                  <span className="text-[9px] text-slate-500">{membro.email_institucional}</span>
-                </div>
-              ))
-            ) : (
-              <p className="text-[10px] text-slate-500 italic">Nenhum membro ativo encontrado.</p>
-            )}
-          </div>
+          <button 
+            onClick={onShowEquipe}
+            className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <span>👥</span> Equipe do Setor
+            </div>
+            <span>➔</span>
+          </button>
         </div>
 
         <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 px-2 flex items-center gap-2">
@@ -182,6 +176,7 @@ export default function Operacional() {
   const [secCor, setSecCor] = useState('');
   const [userPerfil, setUserPerfil] = useState('');
   const [equipe, setEquipe] = useState([]);
+  const [showEquipeModal, setShowEquipeModal] = useState(false);
 
   useEffect(() => {
     const id = typeof window !== 'undefined' ? localStorage.getItem('smiic_secretaria_id') || '' : '';
@@ -283,7 +278,7 @@ export default function Operacional() {
         <Navbar secCor={secCor} />
 
         <div className="flex flex-1 overflow-hidden">
-          <Sidebar estacoes={estacoes} secCor={secCor} secNome={secNome} userPerfil={userPerfil} onSelectEstacao={setEstacaoSelecionadaId} equipe={equipe} />
+          <Sidebar estacoes={estacoes} secCor={secCor} secNome={secNome} userPerfil={userPerfil} onSelectEstacao={setEstacaoSelecionadaId} onShowEquipe={() => setShowEquipeModal(true)} />
 
           <main className="flex-1 overflow-y-auto p-8 bg-neutral-950 relative">
             
@@ -356,6 +351,37 @@ export default function Operacional() {
           </main>
         </div>
       </div>
+
+      {/* Modal Equipe */}
+      {showEquipeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#03132e] border border-[#1e4896] rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="p-5 border-b border-[#1e4896] flex items-center justify-between">
+              <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                <span>👥</span> Equipe do Setor
+              </h3>
+              <button 
+                onClick={() => setShowEquipeModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+              {equipe && equipe.length > 0 ? (
+                equipe.map((membro, idx) => (
+                  <div key={idx} className="bg-[#0a234f] border border-[#133570] rounded-lg p-3 mb-3 last:mb-0">
+                    <strong className="block text-white text-sm">{membro.nome_completo}</strong> 
+                    <span className="text-xs text-slate-400">{membro.email_institucional}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500 italic text-center py-4">Nenhum membro ativo encontrado.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </LoginWrapper>
   );
 }

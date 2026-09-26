@@ -636,7 +636,6 @@ function PainelAdmin({ onLogout, adminPass }) {
                 <div key={sec.id} className="bg-[#0a234f] border border-[#133570] rounded-xl p-5 flex flex-col justify-between" style={{ borderLeftWidth: '4px', borderLeftColor: sec.cor_identidade }}>
                   <div>
                     <h3 className="text-white font-bold text-sm mb-1">{sec.nome}</h3>
-                    <p className="text-[10px] text-slate-400">ID: {sec.id}</p>
                   </div>
                   <div className="mt-4 flex flex-col gap-2">
                     <button onClick={() => handleVerPainel(sec, 'operacional')} className="w-full bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
