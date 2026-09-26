@@ -434,7 +434,7 @@ function PainelAdmin({ onLogout, adminPass }) {
           onClick={() => setActiveTab('historico')}
           className={`py-3 px-4 font-bold text-sm border-b-2 transition-all whitespace-nowrap ${activeTab === 'historico' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
         >
-          Histórico e Relatórios ({historico.length})
+          Histórico de Usuários ({historico.length})
         </button>
         <button 
           onClick={() => setActiveTab('secretarias')}
@@ -606,14 +606,9 @@ function PainelAdmin({ onLogout, adminPass }) {
                     <p className="text-[10px] text-slate-400">ID: {sec.id}</p>
                   </div>
                   <div className="mt-4 flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <button onClick={() => handleVerPainel(sec, 'operacional')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
-                        Painel Operacional
-                      </button>
-                      <button onClick={() => handleVerPainel(sec, 'panorama')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
-                        Panorama
-                      </button>
-                    </div>
+                    <button onClick={() => handleVerPainel(sec, 'operacional')} className="w-full bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
+                      Painel Operacional
+                    </button>
                     <button onClick={() => handleDeleteSecretaria(sec.id, sec.nome)} className="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 text-[10px] font-bold py-1.5 rounded transition-colors uppercase tracking-wider">
                       Excluir
                     </button>
