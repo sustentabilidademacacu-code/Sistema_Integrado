@@ -49,7 +49,7 @@ function Navbar({ secCor }) {
   );
 }
 
-function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
+function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao, equipe }) {
   return (
     <aside className="w-80 bg-[#03132e] flex flex-col z-10 shadow-2xl relative border-r border-[#03132e]">
       
@@ -113,6 +113,24 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
 
         </div>
 
+        <div className="mb-6 px-1">
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <span>👥</span> Equipe do Setor
+          </p>
+          <div className="bg-[#0a234f] border border-[#133570] rounded-lg p-3 max-h-32 overflow-y-auto custom-scrollbar">
+            {equipe && equipe.length > 0 ? (
+              equipe.map((membro, idx) => (
+                <div key={idx} className="text-xs text-slate-300 py-1.5 border-b border-[#133570]/50 last:border-0">
+                  <strong className="block text-white">{membro.nome_completo}</strong> 
+                  <span className="text-[9px] text-slate-500">{membro.email_institucional}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-[10px] text-slate-500 italic">Nenhum membro ativo encontrado.</p>
+            )}
+          </div>
+        </div>
+
         <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 px-2 flex items-center gap-2">
           <span>🔥</span> Risco de Incêndio — Sensores e Estações
         </p>
@@ -163,6 +181,7 @@ export default function Operacional() {
   const [secNome, setSecNome] = useState('');
   const [secCor, setSecCor] = useState('');
   const [userPerfil, setUserPerfil] = useState('');
+  const [equipe, setEquipe] = useState([]);
 
   useEffect(() => {
     const id = typeof window !== 'undefined' ? localStorage.getItem('smiic_secretaria_id') || '' : '';
@@ -173,13 +192,16 @@ export default function Operacional() {
       setSecNome(localStorage.getItem('smiic_secretaria_nome') || 'Secretaria Operacional');
       setSecCor(localStorage.getItem('smiic_secretaria_cor') || '#1e293b');
       try {
-        const [resOco, resSec, resIrifRaw] = await Promise.all([
+        const [resOco, resSec, resIrifRaw, resEquipe] = await Promise.all([
           supabase.from('ocorrencias').select('*'),
           supabase.from('secretarias').select('*'),
-          fetch('/api/get-clima').then(r => r.json())
+          fetch('/api/get-clima').then(r => r.json()),
+          supabase.from('solicitacao_acesso').select('nome_completo, email_institucional').eq('secretaria_id', id).eq('status', 'liberado')
         ]);
         const resEst = { data: [] };
         const resIrif = { data: resIrifRaw.data || [] };
+
+        if (resEquipe.data) setEquipe(resEquipe.data);
 
         const secList = resSec.data || [];
 
@@ -261,7 +283,7 @@ export default function Operacional() {
         <Navbar secCor={secCor} />
 
         <div className="flex flex-1 overflow-hidden">
-          <Sidebar estacoes={estacoes} secCor={secCor} secNome={secNome} userPerfil={userPerfil} onSelectEstacao={setEstacaoSelecionadaId} />
+          <Sidebar estacoes={estacoes} secCor={secCor} secNome={secNome} userPerfil={userPerfil} onSelectEstacao={setEstacaoSelecionadaId} equipe={equipe} />
 
           <main className="flex-1 overflow-y-auto p-8 bg-neutral-950 relative">
             

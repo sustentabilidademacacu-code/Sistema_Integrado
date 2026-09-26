@@ -170,6 +170,8 @@ function PainelAdmin({ onLogout, adminPass }) {
   
   // Estados para Secretarias
   const [novaSecretaria, setNovaSecretaria] = useState({ nome: '', cor_identidade: '#133570' });
+  const [editandoSec, setEditandoSec] = useState(null);
+  const [verUsuariosSecId, setVerUsuariosSecId] = useState(null);
 
   // Estados para Ocorrências
   const [todasOcorrencias, setTodasOcorrencias] = useState([]);
@@ -231,17 +233,41 @@ function PainelAdmin({ onLogout, adminPass }) {
     if (data) setTodasOcorrencias(data);
   }
 
-  const handleCreateSecretaria = async (e) => {
+  const handleSaveSecretaria = async (e) => {
     e.preventDefault();
     if (!novaSecretaria.nome) return alert('Digite o nome');
-    const { error } = await supabase.from('secretarias').insert([novaSecretaria]);
-    if (!error) {
-      alert("Secretaria adicionada!");
-      setNovaSecretaria({ nome: '', cor_identidade: '#133570' });
-      fetchSolicitacoes();
+    
+    if (editandoSec) {
+      const { error } = await supabase.from('secretarias').update({ nome: novaSecretaria.nome, cor_identidade: novaSecretaria.cor_identidade }).eq('id', editandoSec.id);
+      if (!error) {
+        alert("Secretaria atualizada!");
+        setEditandoSec(null);
+        setNovaSecretaria({ nome: '', cor_identidade: '#133570' });
+        fetchSolicitacoes();
+      } else {
+        alert("Erro ao atualizar secretaria: " + error.message);
+      }
     } else {
-      alert("Erro ao adicionar secretaria: " + error.message);
+      const { error } = await supabase.from('secretarias').insert([novaSecretaria]);
+      if (!error) {
+        alert("Secretaria adicionada!");
+        setNovaSecretaria({ nome: '', cor_identidade: '#133570' });
+        fetchSolicitacoes();
+      } else {
+        alert("Erro ao adicionar secretaria: " + error.message);
+      }
     }
+  };
+
+  const handleEditSecretariaClick = (sec) => {
+    setEditandoSec(sec);
+    setNovaSecretaria({ nome: sec.nome, cor_identidade: sec.cor_identidade });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEditSecretaria = () => {
+    setEditandoSec(null);
+    setNovaSecretaria({ nome: '', cor_identidade: '#133570' });
   };
 
   const handleDeleteSecretaria = async (id, nome) => {
@@ -582,19 +608,26 @@ function PainelAdmin({ onLogout, adminPass }) {
         ) : activeTab === 'secretarias' ? (
           <div className="space-y-6">
             <div className="bg-[#0a234f] border border-[#133570] rounded-xl p-6">
-              <h2 className="text-lg font-bold text-white mb-4">Adicionar Nova Secretaria</h2>
-              <form onSubmit={handleCreateSecretaria} className="flex gap-4 items-end">
-                <div className="flex-1">
+              <h2 className="text-lg font-bold text-white mb-4">{editandoSec ? 'Editar Secretaria' : 'Adicionar Nova Secretaria'}</h2>
+              <form onSubmit={handleSaveSecretaria} className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="flex-1 w-full">
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome do Órgão / Secretaria</label>
                   <input required type="text" value={novaSecretaria.nome} onChange={e => setNovaSecretaria({...novaSecretaria, nome: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Ex: Secretaria de Cultura" />
                 </div>
-                <div className="w-24 shrink-0">
+                <div className="w-full md:w-24 shrink-0">
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cor</label>
                   <input required type="color" value={novaSecretaria.cor_identidade} onChange={e => setNovaSecretaria({...novaSecretaria, cor_identidade: e.target.value})} className="w-full h-[46px] rounded-lg cursor-pointer bg-transparent border-0 p-0" />
                 </div>
-                <button type="submit" className="px-6 h-[46px] bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-colors">
-                  + Adicionar
-                </button>
+                <div className="flex gap-2 w-full md:w-auto">
+                  {editandoSec && (
+                    <button type="button" onClick={handleCancelEditSecretaria} className="px-6 h-[46px] bg-slate-600 hover:bg-slate-500 text-white font-bold rounded-lg transition-colors">
+                      Cancelar
+                    </button>
+                  )}
+                  <button type="submit" className={`px-6 h-[46px] ${editandoSec ? 'bg-blue-600 hover:bg-blue-500' : 'bg-purple-600 hover:bg-purple-500'} text-white font-bold rounded-lg transition-colors`}>
+                    {editandoSec ? 'Salvar' : '+ Adicionar'}
+                  </button>
+                </div>
               </form>
             </div>
 
@@ -609,9 +642,34 @@ function PainelAdmin({ onLogout, adminPass }) {
                     <button onClick={() => handleVerPainel(sec, 'operacional')} className="w-full bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
                       Painel Operacional
                     </button>
-                    <button onClick={() => handleDeleteSecretaria(sec.id, sec.nome)} className="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 text-[10px] font-bold py-1.5 rounded transition-colors uppercase tracking-wider">
-                      Excluir
+                    <div className="flex gap-2">
+                      <button onClick={() => handleEditSecretariaClick(sec)} className="flex-1 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/30 text-[10px] font-bold py-1.5 rounded transition-colors uppercase tracking-wider">
+                        Editar
+                      </button>
+                      <button onClick={() => handleDeleteSecretaria(sec.id, sec.nome)} className="flex-1 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 text-[10px] font-bold py-1.5 rounded transition-colors uppercase tracking-wider">
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-2 flex flex-col">
+                    <button onClick={() => setVerUsuariosSecId(verUsuariosSecId === sec.id ? null : sec.id)} className="text-[10px] text-blue-400 font-bold uppercase hover:underline text-left inline-block self-start">
+                      {verUsuariosSecId === sec.id ? 'Ocultar Usuários da Secretaria' : 'Ver Usuários da Secretaria'}
                     </button>
+
+                    {verUsuariosSecId === sec.id && (
+                      <div className="mt-2 bg-[#03132e] border border-[#133570] rounded p-2 max-h-32 overflow-y-auto custom-scrollbar">
+                        {historico.filter(h => h.status === 'liberado' && String(h.secretaria_id) === String(sec.id)).length > 0 ? (
+                          historico.filter(h => h.status === 'liberado' && String(h.secretaria_id) === String(sec.id)).map(user => (
+                            <div key={user.id} className="text-xs text-slate-300 py-1 border-b border-[#133570]/50 last:border-0">
+                              <strong>{user.nome_completo}</strong> <span className="text-[9px] text-slate-500 block">{user.email_institucional}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-[10px] text-slate-500 italic">Nenhum usuário liberado.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
