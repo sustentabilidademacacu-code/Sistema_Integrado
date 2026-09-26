@@ -240,7 +240,7 @@ function PainelAdmin({ onLogout, adminPass }) {
       setNovaSecretaria({ nome: '', cor_identidade: '#133570' });
       fetchSolicitacoes();
     } else {
-      alert("Erro ao adicionar secretaria");
+      alert("Erro ao adicionar secretaria: " + error.message);
     }
   };
 
