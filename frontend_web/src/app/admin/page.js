@@ -476,8 +476,8 @@ function PainelAdmin({ onLogout, adminPass }) {
         </button>
       </div>
 
-      <div className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
+      <div className={`max-w-7xl mx-auto p-8 grid grid-cols-1 ${activeTab === 'pendentes' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-8`}>
+        <div className={activeTab === 'pendentes' ? 'lg:col-span-2' : 'lg:col-span-1'}>
         {loading ? (
           <div className="text-center py-20 text-slate-500 font-bold">Carregando solicitações...</div>
         ) : activeTab === 'pendentes' ? (
@@ -787,42 +787,44 @@ function PainelAdmin({ onLogout, adminPass }) {
         </div>
 
         {/* Lado Direito: Criação Direta */}
-        <div className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 h-fit">
-          <h2 className="text-lg font-bold text-white mb-4">Criar Usuário Diretamente</h2>
-          <form onSubmit={handleCriacaoManual} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
-              <input required type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">E-mail</label>
-              <input required type="email" value={novoEmail} onChange={e => setNovoEmail(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
-              <input required type="text" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Perfil</label>
-              <select required value={novoPerfil} onChange={e => setNovoPerfil(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
-                <option value="operacional">Operacional (Secretaria)</option>
-                <option value="gabinete">Gabinete (War Room)</option>
-              </select>
-            </div>
-            {novoPerfil !== 'gabinete' && (
+        {activeTab === 'pendentes' && (
+          <div className="bg-[#0a234f] border border-[#133570] rounded-xl p-6 h-fit">
+            <h2 className="text-lg font-bold text-white mb-4">Criar Usuário Diretamente</h2>
+            <form onSubmit={handleCriacaoManual} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Secretaria</label>
-                <select required value={novoSec} onChange={e => setNovoSec(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
-                  <option value="">Selecione...</option>
-                  {secretariasList.map(sec => <option key={sec.id} value={sec.id}>{sec.nome}</option>)}
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nome Completo</label>
+                <input required type="text" value={novoNome} onChange={e => setNovoNome(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">E-mail</label>
+                <input required type="email" value={novoEmail} onChange={e => setNovoEmail(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Senha Provisória</label>
+                <input required type="text" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Perfil</label>
+                <select required value={novoPerfil} onChange={e => setNovoPerfil(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
+                  <option value="operacional">Operacional (Secretaria)</option>
+                  <option value="gabinete">Gabinete (War Room)</option>
                 </select>
               </div>
-            )}
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-colors mt-2">
-              Criar e Liberar Acesso
-            </button>
-          </form>
-        </div>
+              {novoPerfil !== 'gabinete' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Secretaria</label>
+                  <select required value={novoSec} onChange={e => setNovoSec(e.target.value)} className="w-full bg-[#133570] border border-[#1e4896] rounded-lg p-2 text-sm text-white">
+                    <option value="">Selecione...</option>
+                    {secretariasList.map(sec => <option key={sec.id} value={sec.id}>{sec.nome}</option>)}
+                  </select>
+                </div>
+              )}
+              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition-colors mt-2">
+                Criar e Liberar Acesso
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
