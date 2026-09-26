@@ -244,6 +244,17 @@ function PainelAdmin({ onLogout, adminPass }) {
     }
   };
 
+  const handleDeleteSecretaria = async (id, nome) => {
+    if (!window.confirm(`Tem certeza que deseja excluir a secretaria "${nome}"? Isso não pode ser desfeito.`)) return;
+    const { error } = await supabase.from('secretarias').delete().eq('id', id);
+    if (!error) {
+      alert("Secretaria excluída com sucesso!");
+      fetchSolicitacoes();
+    } else {
+      alert("Erro ao excluir secretaria: " + error.message);
+    }
+  };
+
   const handleVerPainel = (sec, tipo) => {
     const isGabinete = sec.nome.toLowerCase().includes('gabinete');
     localStorage.setItem('smiic_secretaria_id', sec.id);
@@ -594,12 +605,17 @@ function PainelAdmin({ onLogout, adminPass }) {
                     <h3 className="text-white font-bold text-sm mb-1">{sec.nome}</h3>
                     <p className="text-[10px] text-slate-400">ID: {sec.id}</p>
                   </div>
-                  <div className="mt-4 flex gap-2">
-                    <button onClick={() => handleVerPainel(sec, 'operacional')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
-                      Painel Operacional
-                    </button>
-                    <button onClick={() => handleVerPainel(sec, 'panorama')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
-                      Panorama
+                  <div className="mt-4 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <button onClick={() => handleVerPainel(sec, 'operacional')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
+                        Painel Operacional
+                      </button>
+                      <button onClick={() => handleVerPainel(sec, 'panorama')} className="flex-1 bg-[#133570] hover:bg-blue-600 text-white text-[10px] font-bold py-2 rounded transition-colors uppercase tracking-wider">
+                        Panorama
+                      </button>
+                    </div>
+                    <button onClick={() => handleDeleteSecretaria(sec.id, sec.nome)} className="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 text-[10px] font-bold py-1.5 rounded transition-colors uppercase tracking-wider">
+                      Excluir
                     </button>
                   </div>
                 </div>
