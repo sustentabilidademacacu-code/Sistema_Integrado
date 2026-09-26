@@ -54,7 +54,7 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
     <aside className="w-80 bg-[#03132e] flex flex-col z-10 shadow-2xl relative border-r border-[#03132e]">
       
       {/* CARD DA SECRETARIA NO TOPO DO MENU */}
-      {userPerfil === 'gabinete' ? (
+      {secNome?.toLowerCase().includes('gabinete') ? (
         <div className="p-6 border-b border-[#03132e] flex flex-col justify-center bg-gradient-to-br from-[#03132e] to-slate-950 relative overflow-hidden">
           {/* Efeito de brilho no selo */}
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-500/20 rounded-full blur-xl"></div>
@@ -69,7 +69,7 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao }) {
           </div>
           
           <h2 className="text-[15px] font-black text-white leading-snug uppercase tracking-wide">
-            Gabinete do Prefeito
+            {secNome}
           </h2>
           <div className="mt-3 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse"></span>
@@ -184,10 +184,11 @@ export default function Operacional() {
         const secList = resSec.data || [];
 
         if (resOco.data) {
+          const currentSecNome = localStorage.getItem('smiic_secretaria_nome') || '';
           const filtered = resOco.data
             .filter(oco => {
               if (oco.status === 'Concluido' || oco.status === 'Concluído') return false;
-              if (perfil === 'gabinete') return true;
+              if (currentSecNome.toLowerCase().includes('gabinete')) return true;
               return String(oco.secretaria_id) === String(id);
             })
             .map(oco => {
