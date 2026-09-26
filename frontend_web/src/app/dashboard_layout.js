@@ -125,11 +125,7 @@ function Sidebar({ secretarias, estacoes }) {
         </div>
       </nav>
       
-      <div className="p-6 border-t border-[#133570]">
-        <button className="w-full bg-[#0a234f] hover:bg-[#133570] text-slate-400 border border-[#1e4896] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-          ⚙️ Configurações Gerais
-        </button>
-      </div>
+
     </aside>
   );
 }
