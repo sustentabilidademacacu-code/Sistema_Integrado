@@ -15,9 +15,10 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
     
     setLoading(true);
     try {
+      const novaDescricao = (oco.descricao ? oco.descricao + '\n\n' : '') + '=== RELATÓRIO DE RESOLUÇÃO ===\n' + relatorio;
       const { error } = await supabase
         .from('ocorrencias')
-        .update({ status: 'Concluido', relatorio_resolucao: relatorio })
+        .update({ status: 'Concluido', descricao: novaDescricao })
         .eq('id', oco.id);
       
       if (!error) {
