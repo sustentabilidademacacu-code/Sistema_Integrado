@@ -138,8 +138,8 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao, onSho
                 <span className="text-sm font-bold text-slate-200 leading-tight">{est.nome}</span>
                 {est.irif && (
                   <button 
-                    onClick={() => window.open('/panorama', '_blank')}
-                    title="Clique para abrir o painel da HexaCloud"
+                    onClick={() => onSelectEstacao(est.id)}
+                    title="Clique para abrir o painel de risco"
                     className="text-xs px-2 py-1 rounded-md text-white font-bold tracking-wide flex-shrink-0 cursor-pointer hover:scale-105 transition-all animate-pulse border border-white/20" 
                     style={{backgroundColor: est.irif.level.color, boxShadow: `0 0 12px ${est.irif.level.color}80`}}
                   >
