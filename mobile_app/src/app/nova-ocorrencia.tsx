@@ -9,14 +9,16 @@ import {
   ScrollView, 
   Alert, 
   SafeAreaView, 
-  ActivityIndicator,
-  Modal,
-  FlatList
+  ActivityIndicator, 
+  Modal, 
+  FlatList 
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../context/ThemeContext';
+import AccessibilityBar from '../components/AccessibilityBar';
 
 // Categorias oficiais alinhadas ao Sistema Web
 const CATEGORIAS = [
@@ -58,6 +60,7 @@ const BAIRROS_OFICIAIS = [
 
 export default function NovaOcorrenciaScreen() {
   const router = useRouter();
+  const { colors, isDark, scaleFont } = useTheme();
 
   // Form States
   const [categoria, setCategoria] = useState<string>('Alagamento');
@@ -228,34 +231,67 @@ export default function NovaOcorrenciaScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.headerBg }]}>
+      {/* Barra de Acessibilidade */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: 2, backgroundColor: colors.headerBg }}>
+        <AccessibilityBar />
+      </View>
+
+      {/* Barra Superior com Botão Voltar */}
+      <View style={[styles.topNav, { backgroundColor: colors.headerBg, borderBottomColor: colors.headerBorder }]}>
+        <TouchableOpacity 
+          style={[styles.navBackBtn, { backgroundColor: colors.bgSecondary }]}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          accessibilityLabel="Voltar para a tela anterior"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.navBackArrow, { color: colors.primary }]}>‹</Text>
+          <Text style={[styles.navBackText, { color: colors.primary, fontSize: scaleFont(13) }]}>Voltar ao Mapa</Text>
+        </TouchableOpacity>
+        <Text style={[styles.navTitle, { color: colors.text, fontSize: scaleFont(14) }]}>Registrar Ocorrência</Text>
+      </View>
+
+      <ScrollView style={[styles.container, { backgroundColor: colors.bg }]} contentContainerStyle={styles.content}>
         
         {/* Header de Orientação */}
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: colors.badgeBg, borderColor: colors.badgeBorder }]}>
           <Text style={styles.infoIcon}>🏛️</Text>
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Canal Direto com o Município</Text>
-            <Text style={styles.infoText}>
+            <Text style={[styles.infoTitle, { color: colors.primary, fontSize: scaleFont(14) }]}>Canal Direto com o Município</Text>
+            <Text style={[styles.infoText, { color: colors.textSecondary, fontSize: scaleFont(12) }]}>
               Seu relato é encaminhado em tempo real para a Sala de Situação e para a Secretaria responsável.
             </Text>
           </View>
         </View>
 
         {/* 1. SELEÇÃO DE CATEGORIA */}
-        <Text style={styles.sectionTitle}>1. Tipo de Ocorrência</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaleFont(14) }]}>1. Tipo de Ocorrência</Text>
         <View style={styles.categoriesGrid}>
           {CATEGORIAS.map((cat) => {
             const isSelected = categoria === cat.id;
             return (
               <TouchableOpacity
                 key={cat.id}
-                style={[styles.categoryCard, isSelected && styles.categoryCardActive]}
+                style={[
+                  styles.categoryCard, 
+                  { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                  isSelected && { borderColor: colors.primary, backgroundColor: colors.primaryLight, borderWidth: 2 }
+                ]}
                 onPress={() => setCategoria(cat.id)}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={`Selecionar ${cat.label}`}
               >
                 <Text style={styles.categoryIcon}>{cat.icon}</Text>
-                <Text style={[styles.categoryLabel, isSelected && styles.categoryLabelActive]} numberOfLines={2}>
+                <Text 
+                  style={[
+                    styles.categoryLabel, 
+                    { color: colors.textSecondary, fontSize: scaleFont(12) },
+                    isSelected && { color: colors.primary, fontWeight: '800' }
+                  ]} 
+                  numberOfLines={2}
+                >
                   {cat.label}
                 </Text>
               </TouchableOpacity>
@@ -264,57 +300,63 @@ export default function NovaOcorrenciaScreen() {
         </View>
 
         {/* 2. LOCALIZAÇÃO E GPS */}
-        <Text style={styles.sectionTitle}>2. Localização do Problema</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaleFont(14) }]}>2. Localização do Problema</Text>
         
         {/* Botão GPS */}
         <TouchableOpacity 
-          style={[styles.gpsButton, latitude !== null && styles.gpsButtonActive]} 
+          style={[
+            styles.gpsButton, 
+            { backgroundColor: colors.card, borderColor: colors.cardBorder },
+            latitude !== null && { backgroundColor: isDark ? '#064e3b' : '#f0fdf4', borderColor: '#22c55e' }
+          ]} 
           onPress={obterLocalizacaoAutomatica}
           disabled={gpsLoading}
           activeOpacity={0.8}
+          accessibilityRole="button"
         >
           {gpsLoading ? (
-            <ActivityIndicator size="small" color="#0f40d4" style={{ marginRight: 8 }} />
+            <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8 }} />
           ) : (
             <Text style={styles.gpsIcon}>{latitude !== null ? '✅' : '📍'}</Text>
           )}
           <View style={{ flex: 1 }}>
-            <Text style={styles.gpsButtonTitle}>
+            <Text style={[styles.gpsButtonTitle, { color: colors.text, fontSize: scaleFont(13) }]}>
               {latitude !== null ? 'Coordenadas GPS Vinculadas' : 'Capturar Minha Localização Atual'}
             </Text>
-            <Text style={styles.gpsStatusText}>{gpsStatus}</Text>
+            <Text style={[styles.gpsStatusText, { color: colors.textMuted, fontSize: scaleFont(11) }]}>{gpsStatus}</Text>
           </View>
         </TouchableOpacity>
 
         {/* Seletor de Bairro */}
-        <Text style={styles.inputLabel}>Bairro / Região *</Text>
+        <Text style={[styles.inputLabel, { color: colors.textSecondary, fontSize: scaleFont(13) }]}>Bairro / Região *</Text>
         <TouchableOpacity 
-          style={styles.selectInput}
+          style={[styles.selectInput, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
           onPress={() => setModalBairroVisible(true)}
           activeOpacity={0.7}
+          accessibilityRole="button"
         >
-          <Text style={styles.selectInputText}>{bairro}</Text>
-          <Text style={styles.selectArrow}>▼</Text>
+          <Text style={[styles.selectInputText, { color: colors.text, fontSize: scaleFont(14) }]}>{bairro}</Text>
+          <Text style={[styles.selectArrow, { color: colors.textMuted }]}>▼</Text>
         </TouchableOpacity>
 
         {/* Rua e Número */}
         <View style={styles.row}>
           <View style={{ flex: 3, marginRight: 10 }}>
-            <Text style={styles.inputLabel}>Rua / Logradouro</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontSize: scaleFont(13) }]}>Rua / Logradouro</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text, fontSize: scaleFont(14) }]}
               placeholder="Ex: Av. Floriano Peixoto"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={colors.textMuted}
               value={logradouro}
               onChangeText={setLogradouro}
             />
           </View>
           <View style={{ flex: 1.2 }}>
-            <Text style={styles.inputLabel}>Número</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontSize: scaleFont(13) }]}>Número</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text, fontSize: scaleFont(14) }]}
               placeholder="Nº"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={colors.textMuted}
               value={numero}
               onChangeText={setNumero}
               keyboardType="numeric"
@@ -323,29 +365,29 @@ export default function NovaOcorrenciaScreen() {
         </View>
 
         {/* Ponto de Referência */}
-        <Text style={styles.inputLabel}>Ponto de Referência / Complemento</Text>
+        <Text style={[styles.inputLabel, { color: colors.textSecondary, fontSize: scaleFont(13) }]}>Ponto de Referência / Complemento</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text, fontSize: scaleFont(14) }]}
           placeholder="Ex: Próximo à ponte, em frente ao mercado..."
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={colors.textMuted}
           value={referencia}
           onChangeText={setReferencia}
         />
 
         {/* 3. DESCRIÇÃO */}
-        <Text style={styles.sectionTitle}>3. Relato do Cidadão *</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaleFont(14) }]}>3. Relato do Cidadão *</Text>
         <TextInput
-          style={styles.textArea}
+          style={[styles.textArea, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.text, fontSize: scaleFont(14) }]}
           multiline
           numberOfLines={4}
           placeholder="Descreva detalhadamente a situação (ex: nível da água subindo, risco a residências, tamanho da árvore...)"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={colors.textMuted}
           value={descricao}
           onChangeText={setDescricao}
         />
 
         {/* 4. FOTO */}
-        <Text style={styles.sectionTitle}>4. Foto do Local (Opcional)</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, fontSize: scaleFont(14) }]}>4. Foto do Local (Opcional)</Text>
         {imageUri ? (
           <View style={styles.imagePreviewWrap}>
             <Image source={{ uri: imageUri }} style={styles.imagePreview} />
@@ -355,20 +397,28 @@ export default function NovaOcorrenciaScreen() {
           </View>
         ) : (
           <View style={styles.photoActions}>
-            <TouchableOpacity style={styles.photoActionBtn} onPress={takePhoto} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={[styles.photoActionBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} 
+              onPress={takePhoto} 
+              activeOpacity={0.7}
+            >
               <Text style={styles.photoActionEmoji}>📸</Text>
-              <Text style={styles.photoActionText}>Tirar Foto</Text>
+              <Text style={[styles.photoActionText, { color: colors.textSecondary, fontSize: scaleFont(12) }]}>Tirar Foto</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.photoActionBtn} onPress={pickImage} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={[styles.photoActionBtn, { backgroundColor: colors.card, borderColor: colors.cardBorder }]} 
+              onPress={pickImage} 
+              activeOpacity={0.7}
+            >
               <Text style={styles.photoActionEmoji}>🖼️</Text>
-              <Text style={styles.photoActionText}>Abrir Galeria</Text>
+              <Text style={[styles.photoActionText, { color: colors.textSecondary, fontSize: scaleFont(12) }]}>Abrir Galeria</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* BOTÃO ENVIAR */}
         <TouchableOpacity 
-          style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+          style={[styles.submitBtn, { backgroundColor: colors.primary }, loading && styles.submitBtnDisabled]}
           onPress={submitOcorrencia}
           disabled={loading}
           activeOpacity={0.85}
@@ -376,7 +426,7 @@ export default function NovaOcorrenciaScreen() {
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.submitBtnText}>🚀 Registrar Chamado Oficial</Text>
+            <Text style={[styles.submitBtnText, { fontSize: scaleFont(16) }]}>🚀 Registrar Chamado Oficial</Text>
           )}
         </TouchableOpacity>
 
@@ -390,11 +440,11 @@ export default function NovaOcorrenciaScreen() {
         onRequestClose={() => setModalBairroVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Selecione o Bairro / Localidade</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.cardBorder }]}>
+              <Text style={[styles.modalTitle, { color: colors.text, fontSize: scaleFont(16) }]}>Selecione o Bairro / Localidade</Text>
               <TouchableOpacity onPress={() => setModalBairroVisible(false)}>
-                <Text style={styles.modalClose}>✕</Text>
+                <Text style={[styles.modalClose, { color: colors.textMuted }]}>✕</Text>
               </TouchableOpacity>
             </View>
             <FlatList
@@ -402,16 +452,26 @@ export default function NovaOcorrenciaScreen() {
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.modalItem, bairro === item && styles.modalItemActive]}
+                  style={[
+                    styles.modalItem, 
+                    { borderBottomColor: colors.cardBorder },
+                    bairro === item && { backgroundColor: colors.primaryLight }
+                  ]}
                   onPress={() => {
                     setBairro(item);
                     setModalBairroVisible(false);
                   }}
                 >
-                  <Text style={[styles.modalItemText, bairro === item && styles.modalItemTextActive]}>
+                  <Text 
+                    style={[
+                      styles.modalItemText, 
+                      { color: colors.textSecondary, fontSize: scaleFont(14) },
+                      bairro === item && { color: colors.primary, fontWeight: '700' }
+                    ]}
+                  >
                     {item}
                   </Text>
-                  {bairro === item && <Text style={styles.modalCheck}>✓</Text>}
+                  {bairro === item && <Text style={[styles.modalCheck, { color: colors.primary }]}>✓</Text>}
                 </TouchableOpacity>
               )}
             />
@@ -426,11 +486,36 @@ export default function NovaOcorrenciaScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+  },
+  topNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  navBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  navBackArrow: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginRight: 4,
+    lineHeight: 20,
+  },
+  navBackText: {
+    fontWeight: '700',
+  },
+  navTitle: {
+    fontWeight: '800',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   content: {
     padding: 18,
@@ -438,14 +523,12 @@ const styles = StyleSheet.create({
   },
   // ─── Header Info ──────────────────────
   infoCard: {
-    backgroundColor: '#eff6ff',
     borderRadius: 14,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#bfdbfe',
   },
   infoIcon: {
     fontSize: 26,
@@ -455,20 +538,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoTitle: {
-    fontSize: 14,
     fontWeight: '800',
-    color: '#1e40af',
     marginBottom: 2,
   },
   infoText: {
-    fontSize: 12,
-    color: '#3b82f6',
     lineHeight: 16,
   },
   sectionTitle: {
-    fontSize: 15,
     fontWeight: '800',
-    color: '#0f172a',
     marginTop: 10,
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -483,9 +560,7 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: '48.5%',
-    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 12,
     flexDirection: 'row',
@@ -497,64 +572,39 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
-  categoryCardActive: {
-    borderColor: '#0f40d4',
-    backgroundColor: '#eff4ff',
-    borderWidth: 2,
-  },
   categoryIcon: {
     fontSize: 22,
   },
   categoryLabel: {
-    fontSize: 12,
     fontWeight: '600',
-    color: '#334155',
     flex: 1,
-  },
-  categoryLabelActive: {
-    color: '#0f40d4',
-    fontWeight: '800',
   },
   // ─── GPS Button ───────────────────────
   gpsButton: {
-    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
     borderRadius: 12,
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  gpsButtonActive: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#86efac',
-  },
   gpsIcon: {
     fontSize: 22,
     marginRight: 10,
   },
   gpsButtonTitle: {
-    fontSize: 13,
     fontWeight: '700',
-    color: '#0f172a',
   },
   gpsStatusText: {
-    fontSize: 11,
-    color: '#64748b',
     marginTop: 1,
   },
   // ─── Form Inputs ──────────────────────
   inputLabel: {
-    fontSize: 13,
     fontWeight: '700',
-    color: '#475569',
     marginBottom: 6,
   },
   selectInput: {
-    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -564,37 +614,26 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   selectInputText: {
-    fontSize: 14,
     fontWeight: '600',
-    color: '#0f172a',
   },
   selectArrow: {
     fontSize: 12,
-    color: '#64748b',
   },
   row: {
     flexDirection: 'row',
     marginBottom: 14,
   },
   input: {
-    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontSize: 14,
-    color: '#0f172a',
     marginBottom: 14,
   },
   textArea: {
-    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 14,
-    fontSize: 14,
-    color: '#0f172a',
     minHeight: 90,
     textAlignVertical: 'top',
     marginBottom: 20,
@@ -608,9 +647,7 @@ const styles = StyleSheet.create({
   },
   photoActionBtn: {
     flex: 1,
-    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
     borderStyle: 'dashed',
     borderRadius: 12,
     paddingVertical: 18,
@@ -622,9 +659,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   photoActionText: {
-    fontSize: 12,
     fontWeight: '700',
-    color: '#475569',
   },
   imagePreviewWrap: {
     marginBottom: 28,
@@ -649,34 +684,30 @@ const styles = StyleSheet.create({
   },
   // ─── Submit Button ────────────────────
   submitBtn: {
-    backgroundColor: '#0f40d4',
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0f40d4',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
   submitBtnDisabled: {
-    backgroundColor: '#93c5fd',
+    opacity: 0.6,
   },
   submitBtnText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0.3,
   },
   // ─── Modal Bairros ────────────────────
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '75%',
@@ -688,17 +719,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
     marginBottom: 10,
   },
   modalTitle: {
-    fontSize: 16,
     fontWeight: '800',
-    color: '#0f172a',
   },
   modalClose: {
     fontSize: 18,
-    color: '#64748b',
     fontWeight: '700',
     padding: 4,
   },
@@ -708,24 +735,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f8fafc',
-  },
-  modalItemActive: {
-    backgroundColor: '#eff4ff',
-    paddingHorizontal: 8,
-    borderRadius: 8,
   },
   modalItemText: {
-    fontSize: 14,
-    color: '#334155',
     fontWeight: '500',
   },
-  modalItemTextActive: {
-    color: '#0f40d4',
-    fontWeight: '700',
-  },
   modalCheck: {
-    color: '#0f40d4',
     fontWeight: '800',
     fontSize: 16,
   },

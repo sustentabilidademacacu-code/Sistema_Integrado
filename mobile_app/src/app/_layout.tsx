@@ -2,29 +2,37 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { AuthProvider } from '../context/AuthContext';
 
 // Previne o auto-hide da tela de carregamento até estarmos prontos
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-  useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+function AppContent() {
+  const { isDark, colors } = useTheme();
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: '#fff' },
-          headerTintColor: '#0f40d4',
+          headerStyle: { backgroundColor: colors.headerBg },
+          headerTintColor: colors.primary,
           headerTitleStyle: { fontWeight: 'bold', fontSize: 16 },
           headerShadowVisible: false,
-          contentStyle: { backgroundColor: '#f0f4f8' },
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
         <Stack.Screen 
           name="index" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="auth/cidadao" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="auth/funcionario" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
@@ -33,10 +41,7 @@ export default function RootLayout() {
         />
         <Stack.Screen 
           name="nova-ocorrencia" 
-          options={{ 
-            title: 'Nova Ocorrência',
-            headerBackTitle: 'Voltar',
-          }} 
+          options={{ headerShown: false }} 
         />
         <Stack.Screen 
           name="funcionario" 
@@ -44,5 +49,19 @@ export default function RootLayout() {
         />
       </Stack>
     </>
+  );
+}
+
+export default function RootLayout() {
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

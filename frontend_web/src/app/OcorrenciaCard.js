@@ -9,23 +9,32 @@ export default function OcorrenciaCard({ oco, isOperacional = false }) {
 
   const handleConfirmResolve = async () => {
     if (relatorio.trim() === '') {
-      alert("Por favor, preencha o relatório de resolução.");
+      alert("Por favor, preencha o relatório técnico de resolução.");
       return;
     }
     
     setLoading(true);
     try {
+      const userNome = typeof window !== 'undefined' ? (localStorage.getItem('smiic_user_nome') || localStorage.getItem('smiic_secretaria_nome') || 'Servidor Operacional') : 'Servidor Operacional';
       const novaDescricao = (oco.descricao ? oco.descricao + '\n\n' : '') + '=== RELATÓRIO DE RESOLUÇÃO ===\n' + relatorio;
+      
       const { error } = await supabase
         .from('ocorrencias')
-        .update({ status: 'Concluido', descricao: novaDescricao })
+        .update({ 
+          status: 'Concluido', 
+          status_publico: 'Resolvido',
+          descricao: novaDescricao,
+          parecer_tecnico: relatorio.trim(),
+          resolvido_por_nome: userNome,
+          resolvido_em: new Date().toISOString()
+        })
         .eq('id', oco.id);
       
       if (!error) {
         window.location.reload();
       } else {
         console.error(error);
-        alert("Erro ao atualizar a ocorrência.");
+        alert("Erro ao atualizar a ocorrência: " + error.message);
         setLoading(false);
       }
     } catch (e) {

@@ -7,6 +7,7 @@ import LoginWrapper from '../LoginWrapper';
 import LogoutButton from '../LogoutButton';
 import OcorrenciaCard from '../OcorrenciaCard';
 import StationDashboard from '../StationDashboard';
+import StatusOperacionalManager from '../StatusOperacionalManager';
 import Link from 'next/link';
 import { STATIONS } from '@/data/stations';
 import { loadState, computeIRIF } from '@/data/irif';
@@ -35,12 +36,10 @@ function Navbar({ secCor }) {
           </h1>
         </div>
         
-        {/* ÁREA DO USUÁRIO E LOGOUT */}
-        <div className="flex items-center gap-5 border-l border-neutral-200 pl-6 h-14">
-          <div className="hidden lg:flex flex-col items-end mr-2">
-            <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Sessão Ativa</span>
-            <span className="text-[11px] font-bold text-neutral-600 uppercase">Operador Autorizado</span>
-          </div>
+        {/* ÁREA DO STATUS OPERACIONAL E LOGOUT */}
+        <div className="flex items-center gap-4 border-l border-neutral-200 pl-6 h-14">
+          <StatusOperacionalManager />
+          <div className="h-10 w-px bg-neutral-200 mx-1"></div>
           <LogoutButton />
         </div>
 

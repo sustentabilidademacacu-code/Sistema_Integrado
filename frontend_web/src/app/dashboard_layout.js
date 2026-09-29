@@ -3,6 +3,7 @@ import FormNovaOcorrencia from './FormNovaOcorrencia';
 import LoginWrapper from './LoginWrapper';
 import LogoutButton from './LogoutButton';
 import OcorrenciaCard from './OcorrenciaCard';
+import StatusOperacionalManager from './StatusOperacionalManager';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -30,24 +31,13 @@ function Navbar() {
             Sistema Municipal Integrado de Inteligência Climática
           </h1>
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">
-            Secretaria Municipal de Sustentabilidade, Clima, Ecossistema, Recursos Hídricos e Projetos Estratégicos
+            Secretaria Municipal de Sustentabilidade, Clima, Ecosistemas, Recursos Hídricos e Projetos Estratégicos
           </p>
         </div>
         
-        {/* Widget de Status Operacional e Logout */}
+        {/* Widget de Status Operacional Dinâmico e Logout */}
         <div className="flex items-center gap-4 shrink-0">
-          <div className="flex flex-col items-center justify-center bg-slate-50 px-6 py-2 rounded-xl border border-slate-200 shadow-inner">
-            <span className="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em] mb-1.5">
-              Status Operacional
-            </span>
-            <div className="px-4 py-1.5 bg-emerald-500 text-white rounded-full text-[11px] font-black shadow-sm border border-emerald-600 tracking-wider flex items-center gap-2">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse shadow-sm"></span>
-              NÍVEL 0 - NORMALIDADE
-            </div>
-            <span className="text-[9px] text-slate-400 uppercase font-bold tracking-widest mt-1.5">
-              Sem ameaça relevante
-            </span>
-          </div>
+          <StatusOperacionalManager />
 
           {/* NOVO BOTÃO DE SAIR AQUI */}
           <div className="h-12 w-px bg-slate-200 mx-2"></div>

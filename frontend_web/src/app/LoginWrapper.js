@@ -25,20 +25,36 @@ function EyeIcon({ isOpen, onClick }) {
   );
 }
 
-// Mapeamento de secretarias hardcoded como fallback
+// Mapeamento de secretarias padronizadas do município
 const SECRETARIAS_FALLBACK = [
-  { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete do Prefeito / Sala de Situação', cor_identidade: '#fbbf24' },
-  { id: '22222222-2222-2222-2222-222222222222', nome: 'Secretaria de Defesa Civil', cor_identidade: '#ea580c' },
-  { id: '33333333-3333-3333-3333-333333333333', nome: 'Secretaria de Obras e Saneamento', cor_identidade: '#2563eb' },
-  { id: '44444444-4444-4444-4444-444444444444', nome: 'Secretaria de Assistência Social', cor_identidade: '#c026d3' },
-  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria de Sustentabilidade', cor_identidade: '#0e7490' },
-  { id: '66666666-6666-6666-6666-666666666666', nome: 'Secretaria de Meio Ambiente', cor_identidade: '#16a34a' },
-  { id: '77777777-7777-7777-7777-777777777777', nome: 'Secretaria de Saúde', cor_identidade: '#dc2626' },
+  { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete do Prefeito', cor_identidade: '#f59e0b' },
+  { id: 'sec-procuradoria', nome: 'Procuradoria Geral', cor_identidade: '#475569' },
+  { id: 'sec-controladoria', nome: 'Controladoria Geral', cor_identidade: '#64748b' },
+  { id: 'sec-governo', nome: 'Secretaria Municipal de Governo e Casa Civil', cor_identidade: '#1e3a8a' },
+  { id: 'sec-administracao', nome: 'Secretaria Municipal de Administração', cor_identidade: '#0284c7' },
+  { id: 'sec-fazenda', nome: 'Secretaria Municipal de Fazenda', cor_identidade: '#059669' },
+  { id: 'sec-planejamento', nome: 'Secretaria Municipal de Planejamento, Habitação e Geoprocessamento', cor_identidade: '#0d9488' },
+  { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', nome: 'Secretaria Municipal de Educação', cor_identidade: '#6366f1' },
+  { id: '77777777-7777-7777-7777-777777777777', nome: 'Secretaria Municipal de Saúde', cor_identidade: '#e11d48' },
+  { id: '44444444-4444-4444-4444-444444444444', nome: 'Secretaria Municipal de Assistencia Social e Políticas para Mulher', cor_identidade: '#d946ef' },
+  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecosistemas, Recursos Hídricos e Projetos Estratégicos', cor_identidade: '#059669' },
+  { id: '33333333-3333-3333-3333-333333333333', nome: 'Secretaria Municipal de Obras Saneamento e Urbanismo', cor_identidade: '#2563eb' },
+  { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', nome: 'Secretaria Municipal de Infraestrutura Governamental', cor_identidade: '#b45309' },
+  { id: '22222222-2222-2222-2222-222222222222', nome: 'Secretaria Municipal de Defesa Civil', cor_identidade: '#ea580c' },
+  { id: 'sec-ordem-publica', nome: 'Secretaria Municipal de Ordem Pública', cor_identidade: '#1e293b' },
+  { id: '66666666-6666-6666-6666-666666666666', nome: 'Secretaria Municipal de Meio Ambiente e Bem Estar Animal', cor_identidade: '#16a34a' },
+  { id: '99999999-9999-9999-9999-999999999999', nome: 'Secretaria Municipal de Agricultura, Abastecimento e Pesca', cor_identidade: '#ca8a04' },
+  { id: 'sec-cultura', nome: 'Secretaria Municipal de Cultura', cor_identidade: '#8b5cf6' },
+  { id: 'sec-esporte', nome: 'Secretaria Municipal de Esporte e Lazer', cor_identidade: '#06b6d4' },
+  { id: 'sec-turismo', nome: 'Secretaria Municipal de Turismo e Eventos', cor_identidade: '#f97316' },
+  { id: 'sec-industria', nome: 'Secretaria Municipal de Industria e Comércio', cor_identidade: '#4f46e5' },
+  { id: 'sec-macatur', nome: 'Fundação Macatur', cor_identidade: '#ec4899' },
+  { id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', nome: 'Secretaria Municipal de Vigilância Sanitária', cor_identidade: '#0284c7' },
+  { id: 'sec-integracao', nome: 'Secretaria Municipal Integração Governamental', cor_identidade: '#3b82f6' },
   { id: '88888888-8888-8888-8888-888888888888', nome: 'AMAE', cor_identidade: '#0284c7' },
-  { id: '99999999-9999-9999-9999-999999999999', nome: 'Secretaria de Agricultura', cor_identidade: '#ca8a04' },
-  { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', nome: 'Secretaria de Infraestrutura Rural', cor_identidade: '#78350f' },
-  { id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', nome: 'Vigilância Sanitária', cor_identidade: '#475569' },
-  { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', nome: 'Secretaria de Educação', cor_identidade: '#4f46e5' }
+  { id: 'sec-comunicacao', nome: 'Secretaria Municipal de Comunicação', cor_identidade: '#0ea5e9' },
+  { id: 'sec-iapcm', nome: 'Instituto de Previdência do Município de Cachoeiras de Macacu (IAPCM)', cor_identidade: '#7c3aed' },
+  { id: 'sec-ciencia', nome: 'Secretaria Municipal de Ciência e Tecnologia', cor_identidade: '#38bdf8' }
 ];
 
 export default function LoginWrapper({ children }) {
@@ -159,7 +175,7 @@ export default function LoginWrapper({ children }) {
         setErro('🚫 Acesso Negado: Sua solicitação foi REJEITADA pelo Setor Responsável. Entre em contato para mais informações.');
         await supabase.auth.signOut();
       } else if (perfilData.status === 'liberado') {
-        // Salva info da secretaria no localStorage
+        // Salva info do usuário e secretaria no localStorage
         const todasSecretarias = secretariasList.length > 0 ? secretariasList : SECRETARIAS_FALLBACK;
         const secretaria = todasSecretarias.find(s => String(s.id) === String(perfilData.secretaria_id));
         if (secretaria) {
@@ -168,6 +184,8 @@ export default function LoginWrapper({ children }) {
           localStorage.setItem('smiic_secretaria_id', secretaria.id || '');
         }
         localStorage.setItem('smiic_perfil', perfilData.perfil || 'operacional');
+        localStorage.setItem('smiic_user_nome', perfilData.nome_completo || perfilData.email_institucional || 'Operador Defesa Civil');
+        localStorage.setItem('smiic_user_email', perfilData.email_institucional || formattedEmail);
         
         setIsAuthenticated(true);
         if (perfilData.perfil === 'gabinete' || perfilData.perfil === 'operacional') {
