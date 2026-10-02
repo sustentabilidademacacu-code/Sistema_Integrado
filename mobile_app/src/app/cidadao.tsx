@@ -8,8 +8,10 @@ import {
   SafeAreaView, 
   ActivityIndicator,
   Modal,
+  ScrollView,
+  Animated,
   Linking,
-  ScrollView
+  Alert
 } from 'react-native';
 import MapView, { Marker, Callout, Polygon } from 'react-native-maps';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -20,6 +22,7 @@ import AccessibilityBar from '../components/AccessibilityBar';
 
 // Importa o contorno do município
 const contornoData = require('../../assets/geojson/contorno_macacu.json');
+import { STATIONS } from '../data/stations';
 
 // Coordenadas e enquadramento ideal de Cachoeiras de Macacu (zoom equilibrado)
 const MACACU_REGION = {
@@ -52,13 +55,49 @@ type AlertaDefesaCivil = {
 };
 
 const TELEFONES_EMERGENCIA = [
-  { nome: 'Defesa Civil Municipal', numero: '199', desc: 'Desastres, alagamentos e deslizamentos', icon: '🚨' },
+  { nome: 'Defesa Civil - Plantão', numero: '(21) 95947-9945', desc: 'Plantão Defesa Civil Cachoeiras de Macacu', icon: '🚨' },
+  { nome: 'Defesa Civil (Nacional)', numero: '199', desc: 'Desastres, alagamentos e deslizamentos', icon: '🚨' },
   { nome: 'Corpo de Bombeiros', numero: '193', desc: 'Incêndios, resgates e acidentes', icon: '🚒' },
   { nome: 'SAMU (Ambulância)', numero: '192', desc: 'Urgências e emergências médicas', icon: '🚑' },
-  { nome: 'Guarda Municipal', numero: '153', desc: 'Segurança e trânsito municipal', icon: '👮' },
   { nome: 'Polícia Militar', numero: '190', desc: 'Ocorrências policiais e emergências', icon: '🚓' },
-  { nome: 'Ouvidoria da Prefeitura', numero: '0800 000 0000', desc: 'Atendimento geral ao cidadão', icon: '🏛️' },
 ];
+
+const PONTOS_APOIO = [
+  { bairro: 'Rasgo', local: 'Ginásio Joacyr Correa' },
+  { bairro: 'Boca do Mato', local: 'Escola M. Boca do Mato' },
+  { bairro: 'Castália', local: 'Escola M. Castália' },
+  { bairro: 'Boa Vista', local: 'Igreja E. Quadrangular' },
+  { bairro: 'Valério', local: 'Capela São Pedro' },
+  { bairro: 'Tuim', local: 'Colégio Alberto M. Barbosa' },
+  { bairro: 'Centro', local: 'CIEP 140' },
+  { bairro: 'Taborda', local: 'CIEP 479 - GP' },
+  { bairro: 'KM 70', local: 'A. D. Congregação KM70' },
+  { bairro: 'São José da Boa Morte', local: 'E. M. Eng. Elias Farah' },
+  { bairro: 'Guapiaçu', local: 'Escola E. F. Guapiaçu' },
+  { bairro: 'Japuíba', local: 'Escola M. de Japuíba' },
+  { bairro: 'Campo do Prado', local: 'Colégio Alberto M. Barbosa' },
+  { bairro: 'Papucaia', local: 'São Sebastião Mendes' }
+];
+
+const BlinkingMarker = ({ color }: { color: string }) => {
+  const scale = React.useRef(new Animated.Value(0.7)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.3, duration: 900, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 0.7, duration: 900, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <View style={styles.blinkingWrap}>
+      <Animated.View style={[styles.blinkingDot, { backgroundColor: color, transform: [{ scale }] }]} />
+      <View style={[styles.blinkingCore, { backgroundColor: color }]} />
+    </View>
+  );
+};
 
 export default function CidadaoHome() {
   const router = useRouter();
@@ -69,6 +108,7 @@ export default function CidadaoHome() {
   const [alerta, setAlerta] = useState<AlertaDefesaCivil | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalEmergenciaVisible, setModalEmergenciaVisible] = useState(false);
+  const [modalAbrigoVisible, setModalAbrigoVisible] = useState(false);
   const contornoCoords = getPolygonCoords();
 
   const fetchDados = useCallback(async () => {
@@ -227,6 +267,25 @@ export default function CidadaoHome() {
           </View>
         </View>
 
+        {/* Card Panorama Geral */}
+        <TouchableOpacity 
+          style={[styles.panoramaCard, { backgroundColor: colors.card, borderColor: colors.cardBorder }]}
+          onPress={() => {
+            Linking.openURL('https://monitoramento-climatico-cm.vercel.app/?view=panorama')
+              .catch(() => Alert.alert('Aviso', 'Não foi possível abrir o panorama das estações no momento.'));
+          }}
+          activeOpacity={0.8}
+        >
+          <View style={styles.panoramaIconWrap}>
+            <Text style={styles.panoramaIcon}>🌐</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.panoramaTitle, { color: colors.text, fontSize: 13 * fontScale }]}>Panorama de Estações</Text>
+            <Text style={[styles.panoramaSub, { color: colors.textMuted, fontSize: 11 * fontScale }]}>Acompanhe todas as estações e sensores do município em tempo real.</Text>
+          </View>
+          <Text style={{ color: colors.primary, fontSize: 18 }}>›</Text>
+        </TouchableOpacity>
+
         {/* Map Area */}
         <View style={styles.mapArea}>
           <MapView
@@ -256,8 +315,9 @@ export default function CidadaoHome() {
                     latitude: Number(oco.latitude),
                     longitude: Number(oco.longitude),
                   }}
-                  pinColor={getPinColor(oco.prioridade_acao)}
+                  tracksViewChanges={false} // Improves performance for custom markers
                 >
+                  <BlinkingMarker color={getPinColor(oco.prioridade_acao)} />
                   <Callout>
                     <View style={styles.callout}>
                       <Text style={styles.calloutCategory}>{oco.categoria || 'Ocorrência'}</Text>
@@ -271,6 +331,35 @@ export default function CidadaoHome() {
                   </Callout>
                 </Marker>
               ))}
+
+            {/* Estações Meteorológicas (Cameras / Panoramas) */}
+            {STATIONS.filter(s => !s.hideFromList).map(station => (
+              <Marker
+                key={`station-${station.id}`}
+                coordinate={{
+                  latitude: station.lat,
+                  longitude: station.lon,
+                }}
+                tracksViewChanges={false}
+              >
+                <View style={styles.stationMarkerWrap}>
+                  <Text style={styles.stationMarkerIcon}>📡</Text>
+                </View>
+                <Callout onPress={() => {
+                  Linking.openURL(`https://hexacloud.com.br/dashboard/?session=${station.session}`)
+                    .catch(() => Alert.alert('Erro', 'Não foi possível abrir o dashboard desta estação.'));
+                }}>
+                  <View style={styles.callout}>
+                    <Text style={styles.calloutCategory}>📡 Estação Climática</Text>
+                    <Text style={[styles.calloutDesc, { fontWeight: '700' }]}>{station.label}</Text>
+                    <Text style={styles.calloutAddr}>📍 {station.bairro || station.regiao}</Text>
+                    <Text style={[styles.calloutAddr, { color: '#2563eb', marginTop: 4, fontWeight: 'bold' }]}>
+                      Toque para acessar a Estação
+                    </Text>
+                  </View>
+                </Callout>
+              </Marker>
+            ))}
           </MapView>
 
           <View style={styles.sourceTag}>
@@ -321,22 +410,37 @@ export default function CidadaoHome() {
             accessibilityLabel="Registrar nova ocorrência para a prefeitura"
             accessibilityRole="button"
           >
-            <Text style={styles.primaryBtnIcon}>+</Text>
-            <Text style={[styles.primaryBtnText, { fontSize: 15 * fontScale }]}>Registrar Ocorrência</Text>
+            <Text style={styles.primaryBtnIcon}>📍</Text>
+            <Text style={[styles.primaryBtnText, { fontSize: 15 * fontScale }]}>Informar Situação</Text>
           </TouchableOpacity>
           
-          {/* Botão Telefones de Emergência (Exclusivo Cidadão) */}
-          <TouchableOpacity 
-            style={[styles.secondaryBtn, { backgroundColor: colors.bgSecondary, borderColor: colors.cardBorder }]} 
-            activeOpacity={0.7}
-            onPress={() => setModalEmergenciaVisible(true)}
-            accessibilityLabel="Abrir lista de telefones e contatos de emergência"
-            accessibilityRole="button"
-          >
-            <Text style={[styles.secondaryBtnText, { color: colors.textSecondary, fontSize: 13 * fontScale }]}>
-              📞  Telefones de Emergência (199 / 193)
-            </Text>
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row', gap: 10}}>
+            {/* Botão Telefones de Emergência (Exclusivo Cidadão) */}
+            <TouchableOpacity 
+              style={[styles.secondaryBtn, { flex: 1, backgroundColor: colors.bgSecondary, borderColor: colors.cardBorder }]} 
+              activeOpacity={0.7}
+              onPress={() => setModalEmergenciaVisible(true)}
+              accessibilityLabel="Abrir lista de telefones e contatos de emergência"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.secondaryBtnText, { color: colors.textSecondary, fontSize: 12 * fontScale, textAlign: 'center' }]}>
+                📞 Telefones SOS
+              </Text>
+            </TouchableOpacity>
+
+            {/* Botão Pontos de Apoio */}
+            <TouchableOpacity 
+              style={[styles.secondaryBtn, { flex: 1, backgroundColor: colors.bgSecondary, borderColor: colors.cardBorder }]} 
+              activeOpacity={0.7}
+              onPress={() => setModalAbrigoVisible(true)}
+              accessibilityLabel="Abrir lista de abrigos da Defesa Civil"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.secondaryBtnText, { color: colors.textSecondary, fontSize: 12 * fontScale, textAlign: 'center' }]}>
+                🛡️ Pontos de Apoio
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
       </View>
@@ -359,8 +463,11 @@ export default function CidadaoHome() {
                   Toque em um número para ligar imediatamente
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => setModalEmergenciaVisible(false)}>
-                <Text style={[styles.modalClose, { color: colors.textMuted }]}>✕</Text>
+              <TouchableOpacity 
+                onPress={() => setModalEmergenciaVisible(false)}
+                style={{ padding: 10, backgroundColor: colors.bgSecondary, borderRadius: 12, borderWidth: 1, borderColor: colors.cardBorder }}
+              >
+                <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textMuted }}>✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -386,6 +493,76 @@ export default function CidadaoHome() {
                   </View>
                 </TouchableOpacity>
               ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL PONTOS DE APOIO */}
+      <Modal
+        visible={modalAbrigoVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalAbrigoVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card, maxHeight: '85%' }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.cardBorder }]}>
+              <View style={{flex: 1}}>
+                <Text style={[styles.modalTitle, { color: colors.text, fontSize: 17 * fontScale }]}>
+                  🛡️ Pontos de Apoio Defesa Civil
+                </Text>
+                <Text style={[styles.modalSub, { color: colors.textMuted }]}>
+                  Locais seguros em caso de desastres e chuvas fortes
+                </Text>
+              </View>
+              <TouchableOpacity 
+                onPress={() => setModalAbrigoVisible(false)}
+                style={{ padding: 10, backgroundColor: colors.bgSecondary, borderRadius: 12, borderWidth: 1, borderColor: colors.cardBorder }}
+              >
+                <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textMuted }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={{ maxHeight: 450 }}>
+              {PONTOS_APOIO.map((abrigo, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.telCard, { backgroundColor: colors.bgSecondary, borderColor: colors.cardBorder, paddingVertical: 14 }]}
+                >
+                  <Text style={styles.telIcon}>🏠</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.telNome, { color: colors.text, fontSize: 14 * fontScale }]}>
+                      {abrigo.bairro}
+                    </Text>
+                    <Text style={[styles.telDesc, { color: colors.textMuted, fontSize: 12 * fontScale, fontWeight: '600' }]}>
+                      {abrigo.local}
+                    </Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.telBadge, { backgroundColor: '#2563eb' }]}
+                    onPress={() => {
+                      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(abrigo.local + ', ' + abrigo.bairro + ', Cachoeiras de Macacu, RJ')}`;
+                      Linking.canOpenURL(url).then(supported => {
+                        if (supported) {
+                          Linking.openURL(url);
+                        } else {
+                          Alert.alert('Erro', 'Nenhum aplicativo de mapa encontrado no celular.');
+                        }
+                      }).catch(() => Alert.alert('Erro', 'Não foi possível traçar a rota.'));
+                    }}
+                  >
+                    <Text style={[styles.telBadgeText, { color: '#fff', fontSize: 13 * fontScale }]}>📍 Ver Rota</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              
+              <TouchableOpacity 
+                onPress={() => setModalAbrigoVisible(false)}
+                style={{ marginTop: 16, backgroundColor: colors.primary, padding: 16, borderRadius: 12, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16 * fontScale }}>Voltar / Fechar</Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
@@ -709,5 +886,79 @@ const styles = StyleSheet.create({
   },
   loginCitizenBtnText: {
     fontWeight: '800',
+  },
+  // ─── Custom Markers ───────────────────
+  blinkingWrap: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  blinkingDot: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    opacity: 0.4,
+  },
+  blinkingCore: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+  },
+  stationMarkerWrap: {
+    backgroundColor: '#ffffff',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#2563eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  stationMarkerIcon: {
+    fontSize: 16,
+  },
+  panoramaCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: -8,
+    marginBottom: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  panoramaIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  panoramaIcon: {
+    fontSize: 20,
+  },
+  panoramaTitle: {
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  panoramaSub: {
+    lineHeight: 14,
   },
 });

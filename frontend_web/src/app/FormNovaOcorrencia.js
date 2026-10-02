@@ -22,10 +22,10 @@ export default function FormNovaOcorrencia() {
   const [secretariaResponsavel, setSecretariaResponsavel] = useState('');
 
   // Estado que controla o menu suspenso de categoria
-  const [categoriaSelect, setCategoriaSelect] = useState('Deslizamento de Terra');
+  const [categoriaSelect, setCategoriaSelect] = useState('Alagamento / Inundação');
 
   const [formData, setFormData] = useState({
-    categoria: 'Deslizamento de Terra', // inicia com o valor padrão do menu
+    categoria: 'Alagamento / Inundação', // inicia com o valor padrão do menu
     descricao: '',
     localidade: '', 
     bairro: '', 
@@ -282,11 +282,12 @@ export default function FormNovaOcorrencia() {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Categoria</label>
                   <select value={categoriaSelect} onChange={handleChangeCategoriaSelect} className="w-full p-2 border border-slate-300 rounded text-sm text-slate-700 outline-none focus:border-[#022888]">
-                    <option value="Deslizamento de Terra">Deslizamento de Terra</option>
-                    <option value="Alagamento">Alagamento</option>
-                    <option value="Inundação">Inundação</option>
-                    <option value="Vendaval">Vendaval</option>
-                    <option value="Queda de Árvore">Queda de Árvore</option>
+                    <option value="Alagamento / Inundação">Alagamento / Inundação</option>
+                    <option value="Deslizamento / Encosta">Deslizamento / Encosta</option>
+                    <option value="Queda de Árvore / Galho">Queda de Árvore / Galho</option>
+                    <option value="Incêndio / Queimada">Incêndio / Queimada</option>
+                    <option value="Erosão de Margem / Rio">Erosão de Margem / Rio</option>
+                    <option value="Chuva Intensa / Temporal">Chuva Intensa / Temporal</option>
                     <option value="Outros">Outros (Especificar)</option>
                   </select>
                   

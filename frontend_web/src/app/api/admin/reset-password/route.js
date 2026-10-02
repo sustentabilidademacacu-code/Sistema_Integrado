@@ -14,8 +14,9 @@ export async function POST(request) {
     }
 
     // Procura o usuário pelo email
+    const formattedEmail = email.includes('@') ? email : `${email.trim().toLowerCase()}@sistema.local`;
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find(u => u.email === email);
+    const userExists = existingUsers?.users?.find(u => u.email === formattedEmail);
 
     if (!userExists) {
       return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 });

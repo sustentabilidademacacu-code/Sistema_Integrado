@@ -6,7 +6,7 @@ import Link from 'next/link';
 // Credenciais agora são validadas de forma segura pelo Backend.
 
 const SECRETARIAS_FALLBACK = [
-  { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete do Prefeito', cor_identidade: '#f59e0b' },
+  { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete', cor_identidade: '#f59e0b' },
   { id: 'sec-procuradoria', nome: 'Procuradoria Geral', cor_identidade: '#475569' },
   { id: 'sec-controladoria', nome: 'Controladoria Geral', cor_identidade: '#64748b' },
   { id: 'sec-governo', nome: 'Secretaria Municipal de Governo e Casa Civil', cor_identidade: '#1e3a8a' },
@@ -16,7 +16,7 @@ const SECRETARIAS_FALLBACK = [
   { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', nome: 'Secretaria Municipal de Educação', cor_identidade: '#6366f1' },
   { id: '77777777-7777-7777-7777-777777777777', nome: 'Secretaria Municipal de Saúde', cor_identidade: '#e11d48' },
   { id: '44444444-4444-4444-4444-444444444444', nome: 'Secretaria Municipal de Assistencia Social e Políticas para Mulher', cor_identidade: '#d946ef' },
-  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecosistemas, Recursos Hídricos e Projetos Estratégicos', cor_identidade: '#059669' },
+  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecossistema, Recursos Hídricos e Projetos Estratégicos', cor_identidade: '#059669' },
   { id: '33333333-3333-3333-3333-333333333333', nome: 'Secretaria Municipal de Obras Saneamento e Urbanismo', cor_identidade: '#2563eb' },
   { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', nome: 'Secretaria Municipal de Infraestrutura Governamental', cor_identidade: '#b45309' },
   { id: '22222222-2222-2222-2222-222222222222', nome: 'Secretaria Municipal de Defesa Civil', cor_identidade: '#ea580c' },
@@ -446,7 +446,7 @@ function PainelAdmin({ onLogout, adminPass }) {
     }
   };
 
-  const nomeSecretaria = (secretaria_id) => {
+  function nomeSecretaria(secretaria_id) {
     return secretariasList.find(s => String(s.id) === String(secretaria_id))?.nome || 'Não informada';
   };
 
@@ -796,7 +796,7 @@ function PainelAdmin({ onLogout, adminPass }) {
                   <h2 className="text-white font-bold flex items-center gap-2">
                     <span>🏢</span> Servidores & Equipe Municipal do Sistema SMIIC
                   </h2>
-                  <p className="text-slate-400 text-xs">Acessos com permissão técnica institucional (Secretarias e Gabinete do Prefeito).</p>
+                  <p className="text-slate-400 text-xs">Acessos com permissão técnica institucional (Secretarias e Gabinete).</p>
                 </div>
                 <span className="text-xs text-indigo-300 font-bold bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-700/60">
                   {servidoresFiltrados.length} servidor{servidoresFiltrados.length !== 1 ? 'es' : ''}

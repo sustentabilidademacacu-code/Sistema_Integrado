@@ -156,10 +156,11 @@ export default function StatusOperacionalManager() {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user?.email) {
             email = session.user.email;
+            const rawEmail = session.user.email.replace('@sistema.local', '');
             const { data: perfilData } = await supabase
               .from('solicitacao_acesso')
               .select('nome_completo, email_institucional, perfil, secretarias(nome)')
-              .eq('email_institucional', session.user.email)
+              .eq('email_institucional', rawEmail)
               .single();
 
             if (perfilData) {

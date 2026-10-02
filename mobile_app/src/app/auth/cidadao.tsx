@@ -20,29 +20,107 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import AccessibilityBar from '../../components/AccessibilityBar';
 
-const BAIRROS_OFICIAIS = [
-  'Sede (Centro / Cachoeiras)',
-  'Centro - Papucaia',
-  'Japuíba',
-  'Guapiaçu',
-  'Ribeira',
-  'Veneza',
-  'Sebastião Mendes',
-  'Expansão',
-  'Coletivo',
-  'Granada',
-  'Gleba Colégio',
-  'Guararapes',
-  'Gleba Ribeira',
-  'Boca do Mato',
-  'Castalia',
-  'Valério',
-  'Funchal',
-  'Maromba',
-  'Campos Elíseos',
-  'Agro-Brasil',
-  'Passo Fundo',
-  'Outro / Zona Rural'
+const LOCALIDADES = [
+  "Agrobrasil",
+  "Anil",
+  "Areal",
+  "Areia Branca",
+  "Belem de Taua",
+  "Bengala",
+  "Bertholdo Duarte",
+  "Boa Sorte",
+  "Boca do Mato",
+  "Bom Jardim",
+  "Castalia",
+  "Cavada",
+  "Derribada",
+  "Duas Barras",
+  "Estreito",
+  "Farao de Baixo",
+  "Farao de Cima",
+  "Funchal",
+  "Gleba Colegio",
+  "Gleba Ribeira",
+  "Granada",
+  "Guapiacu",
+  "Imbira",
+  "Ipiranga",
+  "Itaperiti",
+  "Jaguari",
+  "Japuiba",
+  "Joao Paulo",
+  "Lagoinha",
+  "Marapora",
+  "Marubai",
+  "Matumbo",
+  "Meio da Serra",
+  "Morro Frio",
+  "Morro do Ceu",
+  "Nova Ribeira",
+  "Papucaia",
+  "Papucainha",
+  "Patis",
+  "Pedreira",
+  "Pena",
+  "Porto Taboado",
+  "Quizanga",
+  "Rabelo",
+  "Raiz da Serra",
+  "Rio do Mato",
+  "Santa Fe",
+  "Santa Maria",
+  "Santo Amaro",
+  "Sao Joaquim",
+  "Sao Jose da Boa Morte",
+  "Sao Miguel",
+  "Sebastiana",
+  "Sede",
+  "Serra Queimada",
+  "Setenta",
+  "Soarinho",
+  "Tocas",
+  "Tres Manilhas",
+  "Valerio",
+  "Vecchi"
+];
+
+const BAIRROS = [
+  "Areia Branca",
+  "Betel",
+  "Boa Vista",
+  "Boca do Mato",
+  "Campo do Prado",
+  "Castália",
+  "Centro - Cachoeiras",
+  "Centro - Japuíba",
+  "Centro - Papucaia",
+  "Cidade Alta",
+  "Coletivo",
+  "Expansão",
+  "Forno Velho",
+  "Ganguri",
+  "Gleba Colégio",
+  "Gleba Ribeira",
+  "Granada",
+  "Guararapes",
+  "Marreca",
+  "Parque Santa Luiza",
+  "Parque Veneza",
+  "Pedreira",
+  "Poço Verde",
+  "Raiz da Serra",
+  "Raposo",
+  "Rasgo",
+  "Ribeira",
+  "Santo Antônio",
+  "São Francisco de Assis",
+  "Sebastião Mendes",
+  "Tuim",
+  "Valério",
+  "Várzea",
+  "Veneza",
+  "Vilage",
+  "Viracoopos"
 ];
 
 export default function AuthCidadaoScreen() {
@@ -61,11 +139,13 @@ export default function AuthCidadaoScreen() {
   const [cadNome, setCadNome] = useState('');
   const [cadEmail, setCadEmail] = useState('');
   const [cadTelefone, setCadTelefone] = useState('');
-  const [cadBairro, setCadBairro] = useState('Sede (Centro / Cachoeiras)');
+  const [cadLocalidade, setCadLocalidade] = useState('Sede');
+  const [cadBairro, setCadBairro] = useState('');
   const [cadSenha, setCadSenha] = useState('');
   const [cadSenhaConfirma, setCadSenhaConfirma] = useState('');
 
   // Modais
+  const [modalLocalidadeVisible, setModalLocalidadeVisible] = useState(false);
   const [modalBairroVisible, setModalBairroVisible] = useState(false);
   const [modalResetVisible, setModalResetVisible] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -113,7 +193,8 @@ export default function AuthCidadaoScreen() {
       nome: cadNome,
       email: cadEmail,
       telefone: cadTelefone,
-      bairro: cadBairro,
+      bairro: cadBairro || null,
+      localidade: cadLocalidade,
       senha: cadSenha,
     });
     setLoading(false);
@@ -482,7 +563,7 @@ export default function AuthCidadaoScreen() {
                 </TouchableOpacity>
               </View>
               <FlatList
-                data={BAIRROS_OFICIAIS}
+                data={BAIRROS}
                 keyExtractor={(item) => item}
                 renderItem={({ item }) => (
                   <TouchableOpacity

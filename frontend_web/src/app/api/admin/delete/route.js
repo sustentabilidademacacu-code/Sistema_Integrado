@@ -11,8 +11,9 @@ export async function POST(request) {
 
     // Tentar apagar do Auth do Supabase primeiro
     if (email) {
+      const formattedEmail = email.includes('@') ? email : `${email.trim().toLowerCase()}@sistema.local`;
       const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-      const user = existingUsers?.users?.find(u => u.email === email);
+      const user = existingUsers?.users?.find(u => u.email === formattedEmail);
       
       if (user) {
         const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(user.id);

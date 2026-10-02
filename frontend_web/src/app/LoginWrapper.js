@@ -27,7 +27,7 @@ function EyeIcon({ isOpen, onClick }) {
 
 // Mapeamento de secretarias padronizadas do município
 const SECRETARIAS_FALLBACK = [
-  { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete do Prefeito', cor_identidade: '#f59e0b' },
+  { id: '11111111-1111-1111-1111-111111111111', nome: 'Gabinete', cor_identidade: '#f59e0b' },
   { id: 'sec-procuradoria', nome: 'Procuradoria Geral', cor_identidade: '#475569' },
   { id: 'sec-controladoria', nome: 'Controladoria Geral', cor_identidade: '#64748b' },
   { id: 'sec-governo', nome: 'Secretaria Municipal de Governo e Casa Civil', cor_identidade: '#1e3a8a' },
@@ -37,7 +37,7 @@ const SECRETARIAS_FALLBACK = [
   { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', nome: 'Secretaria Municipal de Educação', cor_identidade: '#6366f1' },
   { id: '77777777-7777-7777-7777-777777777777', nome: 'Secretaria Municipal de Saúde', cor_identidade: '#e11d48' },
   { id: '44444444-4444-4444-4444-444444444444', nome: 'Secretaria Municipal de Assistencia Social e Políticas para Mulher', cor_identidade: '#d946ef' },
-  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecosistemas, Recursos Hídricos e Projetos Estratégicos', cor_identidade: '#059669' },
+  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecossistema, Recursos Hídricos e Projetos Estratégicos', cor_identidade: '#059669' },
   { id: '33333333-3333-3333-3333-333333333333', nome: 'Secretaria Municipal de Obras Saneamento e Urbanismo', cor_identidade: '#2563eb' },
   { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', nome: 'Secretaria Municipal de Infraestrutura Governamental', cor_identidade: '#b45309' },
   { id: '22222222-2222-2222-2222-222222222222', nome: 'Secretaria Municipal de Defesa Civil', cor_identidade: '#ea580c' },
@@ -94,10 +94,11 @@ export default function LoginWrapper({ children }) {
 
         if (session) {
           // Verifica se o perfil está liberado antes de considerar autenticado
+          const rawEmail = session.user.email.replace('@sistema.local', '');
           const { data: perfilData } = await supabase
             .from('solicitacao_acesso')
             .select('status, perfil, secretaria_id')
-            .eq('email_institucional', session.user.email)
+            .eq('email_institucional', rawEmail)
             .single();
 
           if (perfilData && perfilData.status === 'liberado') {
@@ -158,7 +159,7 @@ export default function LoginWrapper({ children }) {
       const { data: perfilData, error: perfilError } = await supabase
         .from('solicitacao_acesso')
         .select('*')
-        .eq('email_institucional', formattedEmail)
+        .eq('email_institucional', email.trim().toLowerCase())
         .single();
 
       if (perfilError || !perfilData) {
@@ -251,7 +252,7 @@ export default function LoginWrapper({ children }) {
       // 2. Inserir a solicitação de acesso com status 'analise'
       const { error: insertError } = await supabase.from('solicitacao_acesso').insert([{
         nome_completo: reqNome,
-        email_institucional: formattedReqEmail,
+        email_institucional: reqEmail.trim().toLowerCase(),
         email_contato: reqEmailContato,
         idade: reqIdade ? parseInt(reqIdade) : null,
         sexo: reqSexo,

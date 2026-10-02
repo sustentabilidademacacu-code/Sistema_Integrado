@@ -7,8 +7,10 @@ import {
   StyleSheet, 
   SafeAreaView, 
   ScrollView,
-  Linking
+  Linking,
+  Alert
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -35,8 +37,41 @@ export default function Index() {
     }
   };
 
-  const ligarEmergencia = (num: string) => {
-    Linking.openURL(`tel:${num}`);
+  const handleEmergenciaComum = (nome: string, num: string) => {
+    Alert.alert(
+      nome,
+      `O que deseja fazer com o número ${num}?`,
+      [
+        { text: 'Ligar', onPress: () => Linking.openURL(`tel:${num}`) },
+        { 
+          text: 'Copiar Número', 
+          onPress: async () => {
+            await Clipboard.setStringAsync(num);
+            Alert.alert('Sucesso', 'Número copiado para a área de transferência!');
+          }
+        },
+        { text: 'Cancelar', style: 'cancel' }
+      ]
+    );
+  };
+
+  const handleDefesaCivilLocal = () => {
+    Alert.alert(
+      'Defesa Civil Local',
+      'Como deseja entrar em contato com o número (21) 95947-9945?',
+      [
+        { text: 'Ligar', onPress: () => Linking.openURL('tel:21959479945') },
+        { text: 'WhatsApp', onPress: () => Linking.openURL('https://wa.me/5521959479945') },
+        { 
+          text: 'Copiar Número', 
+          onPress: async () => {
+            await Clipboard.setStringAsync('21959479945');
+            Alert.alert('Sucesso', 'Número copiado para a área de transferência!');
+          }
+        },
+        { text: 'Cancelar', style: 'cancel' }
+      ]
+    );
   };
 
   return (
@@ -81,7 +116,7 @@ export default function Index() {
             </Text>
             <View style={[styles.divider, { backgroundColor: colors.primary }]} />
             <Text style={[styles.description, { color: colors.textMuted, fontSize: scaleFont(13) }]}>
-              Plataforma oficial de monitoramento climático e gestão de ocorrências municipais
+              Plataforma oficial de monitoramento climático
             </Text>
           </View>
 
@@ -151,7 +186,7 @@ export default function Index() {
             <View style={styles.emergencyGrid}>
               <TouchableOpacity 
                 style={[styles.emergencyButton, { backgroundColor: '#dc2626' }]}
-                onPress={() => ligarEmergencia('199')}
+                onPress={() => handleEmergenciaComum('Defesa Civil', '199')}
                 activeOpacity={0.8}
               >
                 <Text style={styles.emergencyNum}>199</Text>
@@ -160,7 +195,7 @@ export default function Index() {
 
               <TouchableOpacity 
                 style={[styles.emergencyButton, { backgroundColor: '#ea580c' }]}
-                onPress={() => ligarEmergencia('193')}
+                onPress={() => handleEmergenciaComum('Bombeiros', '193')}
                 activeOpacity={0.8}
               >
                 <Text style={styles.emergencyNum}>193</Text>
@@ -169,22 +204,28 @@ export default function Index() {
 
               <TouchableOpacity 
                 style={[styles.emergencyButton, { backgroundColor: '#0284c7' }]}
-                onPress={() => ligarEmergencia('192')}
+                onPress={() => handleEmergenciaComum('SAMU', '192')}
                 activeOpacity={0.8}
               >
                 <Text style={styles.emergencyNum}>192</Text>
                 <Text style={styles.emergencyName}>SAMU</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.emergencyButton, { backgroundColor: '#475569' }]}
-                onPress={() => ligarEmergencia('153')}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.emergencyNum}>153</Text>
-                <Text style={styles.emergencyName}>Guarda</Text>
-              </TouchableOpacity>
             </View>
+
+            {/* Defesa Civil Local (WhatsApp e Ligação) */}
+            <TouchableOpacity 
+              style={styles.localEmergencyBtn}
+              onPress={handleDefesaCivilLocal}
+              activeOpacity={0.85}
+            >
+              <View style={styles.localEmergencyIconBox}>
+                <Text style={styles.localEmergencyIcon}>📞</Text>
+              </View>
+              <View style={styles.localEmergencyTextWrap}>
+                <Text style={styles.localEmergencyTitle}>Defesa Civil (Local)</Text>
+                <Text style={styles.localEmergencySub}>(21) 95947-9945 • Ligação e WhatsApp</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -270,8 +311,8 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 10,
+    marginBottom: 32,
+    paddingHorizontal: 20,
   },
   appName: {
     fontWeight: '800',
@@ -294,6 +335,7 @@ const styles = StyleSheet.create({
   description: {
     textAlign: 'center',
     lineHeight: 18,
+    paddingHorizontal: 16,
   },
   // Sessão Ativa
   sessionCard: {
@@ -423,6 +465,45 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 9,
     marginTop: 2,
+  },
+  localEmergencyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#475569',
+    marginTop: 12,
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#475569',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  localEmergencyIconBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  localEmergencyIcon: {
+    fontSize: 22,
+  },
+  localEmergencyTextWrap: {
+    flex: 1,
+  },
+  localEmergencyTitle: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  localEmergencySub: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 11,
+    fontWeight: '600',
   },
   // Footer
   footer: {

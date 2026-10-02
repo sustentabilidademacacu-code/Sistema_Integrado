@@ -53,7 +53,7 @@ export async function POST(request) {
       // Criação direta pelo admin — insere registro na tabela de acesso já como liberado
       await supabaseAdmin.from('solicitacao_acesso').insert([{
         nome_completo,
-        email_institucional: formattedEmail,
+        email_institucional: email_institucional.trim().toLowerCase(),
         secretaria_id: secretaria_id || null,
         status: 'liberado',
         perfil: perfil || 'operacional',

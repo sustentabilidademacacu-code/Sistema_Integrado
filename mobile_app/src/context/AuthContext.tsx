@@ -7,7 +7,8 @@ export interface UserSession {
   id?: string;
   nome: string;
   email: string;
-  bairro?: string;
+  bairro?: string | null;
+  localidade?: string | null;
   telefone?: string;
   secretaria_id?: string;
   secretaria_nome?: string;
@@ -32,7 +33,8 @@ interface AuthContextType {
     nome: string;
     email: string;
     telefone: string;
-    bairro: string;
+    bairro?: string | null;
+    localidade?: string | null;
     senha: string;
   }) => Promise<{ success: boolean; error?: string }>;
   loginFuncionario: (usuarioOuEmail: string, pass: string) => Promise<{ success: boolean; error?: string }>;
@@ -63,7 +65,7 @@ const SECRETARIAS_FALLBACK: SecretariaItem[] = [
   { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', nome: 'Secretaria Municipal de Educação', sigla: 'EDUCACAO', cor_identidade: '#6366f1' },
   { id: '77777777-7777-7777-7777-777777777777', nome: 'Secretaria Municipal de Saúde', sigla: 'SAUDE', cor_identidade: '#e11d48' },
   { id: '44444444-4444-4444-4444-444444444444', nome: 'Secretaria Municipal de Assistencia Social e Políticas para Mulher', sigla: 'ASSISTENCIA_SOCIAL', cor_identidade: '#d946ef' },
-  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecosistemas, Recursos Hídricos e Projetos Estratégicos', sigla: 'SUSTENTABILIDADE', cor_identidade: '#059669' },
+  { id: '55555555-5555-5555-5555-555555555555', nome: 'Secretaria Municipal de Sustentabilidade, Clima, Ecossistema, Recursos Hídricos e Projetos Estratégicos', sigla: 'SUSTENTABILIDADE', cor_identidade: '#059669' },
   { id: '33333333-3333-3333-3333-333333333333', nome: 'Secretaria Municipal de Obras Saneamento e Urbanismo', sigla: 'OBRAS', cor_identidade: '#2563eb' },
   { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', nome: 'Secretaria Municipal de Infraestrutura Governamental', sigla: 'INFRAESTRUTURA', cor_identidade: '#b45309' },
   { id: '22222222-2222-2222-2222-222222222222', nome: 'Secretaria Municipal de Defesa Civil', sigla: 'DEFESA_CIVIL', cor_identidade: '#ea580c' },
@@ -173,7 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     nome: string;
     email: string;
     telefone: string;
-    bairro: string;
+    bairro?: string | null;
+    localidade?: string | null;
     senha: string;
   }) => {
     try {
@@ -187,6 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             nome: dados.nome.trim(),
             bairro: dados.bairro,
+            localidade: dados.localidade,
             telefone: dados.telefone.trim(),
             tipo: 'cidadao',
           }
@@ -208,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: emailTrim,
           telefone: dados.telefone.trim(),
           bairro: dados.bairro,
+          localidade: dados.localidade,
           criado_em: new Date().toISOString()
         }]);
       } catch (insertErr) {
@@ -219,7 +224,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: authData.user?.id,
         nome: dados.nome.trim(),
         email: emailTrim,
-        bairro: dados.bairro,
+        bairro: dados.bairro || undefined,
+        localidade: dados.localidade || undefined,
         telefone: dados.telefone.trim(),
       };
 
@@ -250,7 +256,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: perfilData, error: perfilError } = await supabase
         .from('solicitacao_acesso')
         .select('*')
-        .eq('email_institucional', formattedEmail)
+        .eq('email_institucional', inputTrim)
         .single();
 
       if (perfilError || !perfilData) {
@@ -331,7 +337,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 2. Registrar na tabela solicitacao_acesso com status 'analise'
       const { error: insertError } = await supabase.from('solicitacao_acesso').insert([{
         nome_completo: dados.nome.trim(),
-        email_institucional: formattedEmail,
+        email_institucional: inputTrim,
         email_contato: dados.emailContato.trim().toLowerCase(),
         idade: dados.idade || null,
         sexo: dados.sexo || 'Não informado',

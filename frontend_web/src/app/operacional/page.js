@@ -104,8 +104,14 @@ function Sidebar({ estacoes, secCor, secNome, userPerfil, onSelectEstacao, onSho
             </button>
           </Link>
           <Link href="/historico">
-            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between">
+            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-neutral-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between mb-2">
               Histórico de Ocorrências
+              <span>➔</span>
+            </button>
+          </Link>
+          <Link href="/graficos">
+            <button className="w-full bg-gradient-to-r from-blue-900 to-indigo-900 border border-blue-700 text-left px-4 py-3 rounded-lg text-sm font-bold text-white hover:from-blue-800 hover:to-indigo-800 transition-all shadow-md flex items-center justify-between">
+              📊 Gráficos das Estações
               <span>➔</span>
             </button>
           </Link>

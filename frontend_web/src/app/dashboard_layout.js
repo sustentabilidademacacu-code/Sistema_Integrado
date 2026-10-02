@@ -31,7 +31,7 @@ function Navbar() {
             Sistema Municipal Integrado de Inteligência Climática
           </h1>
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">
-            Secretaria Municipal de Sustentabilidade, Clima, Ecosistemas, Recursos Hídricos e Projetos Estratégicos
+            Secretaria Municipal de Sustentabilidade, Clima, Ecossistema, Recursos Hídricos e Projetos Estratégicos
           </p>
         </div>
         
@@ -69,8 +69,14 @@ function Sidebar({ secretarias, estacoes }) {
         </p>
         <div className="mb-8 px-1">
           <Link href="/historico">
-            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between">
+            <button className="w-full bg-[#0a234f] border border-[#133570] text-left px-4 py-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-[#133570] hover:text-white transition-all shadow-sm flex items-center justify-between mb-3">
               Histórico de Ocorrências
+              <span>→</span>
+            </button>
+          </Link>
+          <Link href="/radar">
+            <button className="w-full bg-gradient-to-r from-blue-900 to-indigo-900 border border-blue-700 text-left px-4 py-3 rounded-lg text-sm font-bold text-white hover:from-blue-800 hover:to-indigo-800 transition-all shadow-md flex items-center justify-between">
+              📡 Radar Climático (Ao Vivo)
               <span>→</span>
             </button>
           </Link>

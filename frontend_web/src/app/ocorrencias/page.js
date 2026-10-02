@@ -133,11 +133,13 @@ export default function OcorrenciasKanban() {
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Categoria (O que aconteceu?)</label>
                 <select value={novaOco.categoria} onChange={e => setNovaOco({...novaOco, categoria: e.target.value})} className="w-full bg-[#133570] border border-[#1e4896] text-white rounded-lg p-2 text-sm font-bold">
-                  <option>Alagamento</option>
-                  <option>Queda de Árvore</option>
-                  <option>Deslizamento de Terra</option>
-                  <option>Foco de Incêndio</option>
-                  <option>Acidente Viário</option>
+                  <option>Alagamento / Inundação</option>
+                  <option>Deslizamento / Encosta</option>
+                  <option>Queda de Árvore / Galho</option>
+                  <option>Incêndio / Queimada</option>
+                  <option>Erosão de Margem / Rio</option>
+                  <option>Chuva Intensa / Temporal</option>
+                  <option>Outros</option>
                 </select>
               </div>
               <div>
